@@ -449,9 +449,6 @@ gitattr_grep() {
     done
 }
 
-trap __exit EXIT
-__init
-
 while getopts "l:qv?-:" OPTKEY; do
     getopts_long OPTKEY
     case ${OPTKEY} in
@@ -489,6 +486,8 @@ COMMAND="${1}" && shift
 
 case ${COMMAND} in
     'install'|'keys'|'track'|'untrack'|'clean'|'smudge'|'textconv')
+        trap __exit EXIT
+        __init
         exec_${COMMAND} ${@}
         ;;
     'help')
