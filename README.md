@@ -1,6 +1,4 @@
-<img src="https://umka.dk/git-gpg/logo.png" alt="git-gpg" align="left" height="50">
-
-**Version:** 1.0.0 <br>
+<img src="https://umka.dk/git-gpg/logo.png" alt="git-gpg" align="left" height="50">**Version:** 1.0.0 <br>
 **Status:** Fully functional, missing tests
 
 # Git-GPG
