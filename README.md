@@ -7,7 +7,7 @@
 
 # Git-GPG
 
-This extension allows an individual user or a team of authorised users to automatically encrypt any number of sensitive files before committing them to a repository. The files are transparently decrypted when the repository is checked out by one of the above users.
+This Git extension allows an individual user or a team of authorised users to protect sensitive information in the repository using GPG. Protected files are  automatically encrypted before being committed to the repository. They are also automatically decrypted when the repository is checked out by one of the authorised users. Once setup, the extension works completely transparently and requires no further input from the user.
 
 Git-GPG is tightly integrated with the existing git sub-systems, and provides the following features:
 
@@ -15,11 +15,11 @@ Git-GPG is tightly integrated with the existing git sub-systems, and provides th
 
 - global, as well as per file, list of GPG keys with which the files are encrypted;
 
-- a list of GPG keys with which to encrypt a file is defined via git-config;
+- GPG keys which are used to encrypt a file are defined via git-config;
 
-- full support for git diff between branches or previous commits;
+- full support for git diff, including diffs between branches and previous commits;
 
-- command line interface is kept consistent with that of git-lfs;
+- command line interface is kept consistent with git-lfs;
 
 The use of GPG encryption for file encryption has a number of distinct advantages over a more traditional method of using symmetric key algorithms, such as OpenSSL.
 
