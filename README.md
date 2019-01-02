@@ -1,11 +1,15 @@
-<img src="https://umka.dk/git-gpg/logo.png" alt="git-gpg" align="left" height="50">**Version:** 1.0.0 <br>
+<img src="https://umka.dk/git-gpg/logo.png" alt="git-gpg" align="left" height="70">
+
+**Version:** 1.0.0 <br>
 **Status:** Fully functional, missing tests
+
+<br>
 
 # Git-GPG
 
-A Git filter used to automatically encode and decode repository files using GPG. It allows individual users or a team of authorised users to store GPG encrypted files in the repository, and transparently decrypt them when the repository is checked out.
+This extension allows an individual user or a team of authorised users to automatically encrypt any number of sensitive files before committing them to a repository. The files are transparently decrypted when the repository is checked out by one of the above users.
 
-Git-GPG filter is tightly integrated with the existing git sub-systems, and provides the following features:
+Git-GPG is tightly integrated with the existing git sub-systems, and provides the following features:
 
 - command line support for enabling and disabling encrypted storage of any file;
 
