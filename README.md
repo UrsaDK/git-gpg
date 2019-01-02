@@ -1,5 +1,5 @@
-<img src="https://git-scm.com/images/logos/downloads/Git-Logo-2Color.eps" alt="git-gpg" align="left" height="50">
-	
+<img src="https://umka.dk/git-gpg/logo.png" alt="git-gpg" align="left" height="50">
+
 **Version:** 1.0.0 <br>
 **Status:** Fully functional, missing tests
 
@@ -36,4 +36,4 @@ Another big advantage of using GPG is that git is already aware of GPG and uses 
 
 ## Alternatives
 
-There is a number of similar 
+There is a number of similar
