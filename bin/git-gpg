@@ -2,10 +2,11 @@
 
 VERSION='1.0.0'
 INIT_DIR=$(pwd)
+INIT_CMD=${0##*/}
 
 __help() {
 cat <<EOS
-Usage: ${0##*/} [options] <commands>
+Usage: ${INIT_CMD} [options] <commands>
 
 Options                 <> - required parameters
 -------                 [] - optional parameters
@@ -18,11 +19,11 @@ Options                 <> - required parameters
 Commands                <> - required parameters
 --------                [] - optional parameters
 
-install                 $(help_keys | head -1)
+install                 $(help_install | head -1)
 keys <file>             $(help_keys | head -1)
 track [path]            $(help_track | head -1)
 untrack <path>          $(help_untrack | head -1)
-version                 Show ${0##*/} version number
+version                 Show ${INIT_CMD} version number
 help [command]          Display help for the command
 
 Filters                 <> - required parameters
@@ -39,16 +40,16 @@ __init() {
     init_var GIT_BIN "$(type -P git)" "Missing git executable (GIT_BIN)"
     init_var GPG_BIN "$(type -P gpg)" "Missing gpg executable (GPG_BIN)"
 
-    git rev-parse --is-inside-work-tree >&- || exit
+    git rev-parse --is-inside-work-tree >/dev/null || exit
     : ${GIT_TOPLEVEL_DIR:="$(${GIT_BIN} rev-parse --show-toplevel)"}
 }
 
 __exit() {
-    : # Executed when the script exits
+    : # [Destructor] Executed when the script exits
 }
 
 __version() {
-    echo "${0##*/}/${VERSION}"
+    echo "${INIT_CMD}/${VERSION}"
 }
 
 # User Commands
@@ -60,8 +61,8 @@ Install Git LFS configuration
 
     -? --help               Display this help message
 
-Set up the clean and smudge filters, and diff textconv programme under
-the name "gpg" in the global Git config.
+Set up clean and smudge filters, and add diff textconv programme to Git
+config. This will create a new configuration section called "gpg".
 EOS
 
 }
@@ -90,7 +91,7 @@ as it is and will not be altered.
 
 The <path> argument can be a glob pattern or a file path.
 
-    ${0##*/} ${FUNCNAME#help_} -- [path]
+    ${INIT_CMD} ${FUNCNAME#help_} -- [path]
 
 If no paths are provided, simply list the currently-tracked paths.
 EOS
@@ -109,7 +110,7 @@ exec_track() {
                 ;;
             *)
                 if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal clean option -- ${OPTKEY}"
+                    exit_error "${0}: illegal track option -- ${OPTKEY}"
                 fi
                 ;;
         esac
@@ -152,7 +153,7 @@ as it is and will not be altered.
 
 The <path> argument can be a glob pattern or a file path.
 
-    ${0##*/} ${FUNCNAME#help_} -- <path>
+    ${INIT_CMD} ${FUNCNAME#help_} -- <path>
 
 EOS
 }
@@ -167,7 +168,7 @@ exec_untrack() {
                 ;;
             *)
                 if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal clean option -- ${OPTKEY}"
+                    exit_error "${0}: illegal untrack option -- ${OPTKEY}"
                 fi
                 ;;
         esac
@@ -187,7 +188,7 @@ exec_untrack() {
 
 help_keys() {
 cat <<EOS
-List all GPG keys which can decode the file
+List all GPG keys which can decode a file
 
     -s --staged             Work on the staged content
     -? --help               Display this help message
@@ -196,7 +197,7 @@ GPG can encode a file for multiple recipients using their public keys,
 see GPG's --recipient option for more details. This command will list
 all public keys used in the encoding of the committed file.
 
-    ${0##*/} ${FUNCNAME#help_} -- <file>
+    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
 
 EOS
 }
@@ -214,7 +215,7 @@ exec_keys() {
                 ;;
             *)
                 if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal clean option -- ${OPTKEY}"
+                    exit_error "${0}: illegal keys option -- ${OPTKEY}"
                 fi
                 ;;
         esac
@@ -240,7 +241,7 @@ Git clean filter used to encrypt file content
 This filter accepts a single additional parameter, which defines
 the path to the file the filter is working on.
 
-    ${0##*/} ${FUNCNAME#help_} -- <file>
+    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
 
 EOS
 }
@@ -270,7 +271,7 @@ exec_clean() {
         | base64 --decode - \
         | ${GPG_BIN} --print-md sha256)}"
 
-    local git_content="$(${GIT_BIN} cat-file -p "HEAD:${1}" 2>&- | base64 -)"
+    local git_content="$(${GIT_BIN} cat-file -p "HEAD:${1}" 2>/dev/null | base64 -)"
     local git_content_hash="${git_content:+$(printf '%s' "${git_content}" \
         | gpg_decrypt \
         | ${GPG_BIN} --print-md sha256)}"
@@ -291,7 +292,7 @@ Git smudge filter used to decrypt file content
 This filter accepts a single additional parameter, which defines
 the path to the file the filter is working on.
 
-    ${0##*/} ${FUNCNAME#help_} -- <file>
+    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
 
 EOS
 }
@@ -333,7 +334,7 @@ Git textconv filter used to diff encrypted files
 This filter accepts a single additional parameter, which defines
 the path to the file the filter is working on.
 
-    ${0##*/} ${FUNCNAME#help_} -- <file>
+    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
 
 EOS
 }
@@ -348,7 +349,7 @@ exec_textconv() {
                 ;;
             *)
                 if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal clean option -- ${OPTKEY}"
+                    exit_error "${0}: illegal textconv option -- ${OPTKEY}"
                 fi
                 ;;
         esac
@@ -460,19 +461,30 @@ while getopts "l:qv?-:" OPTKEY; do
             ;;
         'q'|'quiet')
             exec 5>&1 6>&2 # Backup STDOUT and STDERR
-            exec >&-
+            exec 1>/dev/null 2>/dev/null
             ;;
+        'version'|'help')
+            COMMAND="${OPTKEY}"
+            ;;
+        '?'|*)
+            # ? - matches invalid short options
+            # * - matches invalid long options
+
+
+
+
+
         'v'|'version')
-            __version
-            exit
+            COMMAND='version'
             ;;
         '?'|'help')
-            __help
-            exit
+            echo "---------------> HELP"
+            COMMAND='help'
             ;;
         *)
+            echo "---------------> ERROR"
             if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                exit_error "${0}: illegal option -- ${OPTKEY}"
+                exit_error "${INIT_CMD}: illegal option -- ${OPTKEY}"
             fi
             ;;
     esac
@@ -481,8 +493,8 @@ done
 shift $(( OPTIND - 1 ))
 [[ "${1}" == "--" ]] && shift
 
-[[ -z "${1}" ]] && exit_error "${0}: missing command"
-COMMAND="${1}" && shift
+[[ -z "${COMMAND}" ]] && COMMAND="${1}" && shift
+[[ -z "${COMMAND}" ]] && exit_error "${INIT_CMD}: missing command"
 
 case ${COMMAND} in
     'install'|'keys'|'track'|'untrack'|'clean'|'smudge'|'textconv')
@@ -491,7 +503,15 @@ case ${COMMAND} in
         exec_${COMMAND} ${@}
         ;;
     'help')
-        [[ -z "${1}" ]] && __help || help_${1}
+        if [[ -z "${@}" ]]; then
+            __help
+        elif type -t "help_${1}" >/dev/null; then
+            COMMAND="${1}" && shift
+            help_${COMMAND}
+        else
+            unset COMMAND
+            exit_error "${0}: undocumented command -- ${1}"
+        fi
         exit
         ;;
     'version')
@@ -499,6 +519,6 @@ case ${COMMAND} in
         exit
         ;;
     *)
-        exit_error "${0}: illegal command -- ${COMMAND}"
+        exit_error "${INIT_CMD}: illegal command -- ${COMMAND}"
         ;;
 esac
