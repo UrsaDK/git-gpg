@@ -1,460 +1,29 @@
 #!/usr/bin/env bash
 
-VERSION='1.0.0'
-INIT_DIR=$(pwd)
-INIT_CMD=${0##*/}
+: ${SRC_DIR:="$([[ -L "${BASH_SOURCE}" ]] \
+    && dirname "$(dirname "$(readlink "${BASH_SOURCE}")")" \
+    || dirname "$(cd "$(dirname "${BASH_SOURCE}")" && pwd)")"}
+VERSION="$(cat "${SRC_DIR}/VERSION")"
+eval "$(find "${SRC_DIR}/lib" \( -type f -o -type l \) -exec cat {} \;)"
 
-__help() {
-cat <<EOS
-Usage: ${INIT_CMD} [options] <commands>
+# --- --- ---
 
-Options                 <> - required parameters
--------                 [] - optional parameters
+set_var GIT_BIN "$(type -P git)" "Missing git executable (GIT_BIN)"
+set_var GPG_BIN "$(type -P gpg)" "Missing gpg executable (GPG_BIN)"
 
--l --log=<path>         Redirect all output to a file
--q --quiet              Suppress output of the script
--? --help               Display this help message
---version               Script and BASH version info
+git rev-parse --is-inside-work-tree >/dev/null || exit
+: ${GIT_TOPLEVEL_DIR:="$(${GIT_BIN} rev-parse --show-toplevel)"}
+: ${GIT_GPG_COLOR:="$(use_color_bool)"}
 
-Commands                <> - required parameters
---------                [] - optional parameters
-
-install                 $(help_install | head -1)
-keys <file>             $(help_keys | head -1)
-track [path]            $(help_track | head -1)
-untrack <path>          $(help_untrack | head -1)
-version                 Show ${INIT_CMD} version number
-help [command]          Display help for the command
-
-Filters                 <> - required parameters
--------                 [] - optional parameters
-
-clean <file>            $(help_clean | head -1)
-smudge <file>           $(help_smudge | head -1)
-textconv                $(help_textconv | head -1)
-
-EOS
-}
-
-__init() {
-    init_var GIT_BIN "$(type -P git)" "Missing git executable (GIT_BIN)"
-    init_var GPG_BIN "$(type -P gpg)" "Missing gpg executable (GPG_BIN)"
-
-    git rev-parse --is-inside-work-tree >/dev/null || exit
-    : ${GIT_TOPLEVEL_DIR:="$(${GIT_BIN} rev-parse --show-toplevel)"}
-}
-
-__exit() {
-    : # [Destructor] Executed when the script exits
-}
-
-__version() {
-    echo "${INIT_CMD}/${VERSION}"
-}
-
-# User Commands
-# -------------
-
-help_install() {
-cat <<EOS
-Install Git LFS configuration
-
-    -? --help               Display this help message
-
-Set up clean and smudge filters, and add diff textconv programme to Git
-config. This will create a new configuration section called "gpg".
-EOS
-
-}
-
-exec_install() {
-    git config --global --replace-all filter.gpg.required "true"
-    git config --global --replace-all filter.gpg.clean "git-gpg clean -- %f"
-    git config --global --replace-all filter.gpg.smudge "git-gpg smudge -- %f"
-    git config --global --replace-all filter.gpg.smudge "git-gpg smudge -- %f"
-    git config --global --replace-all diff.gpg.textconv "git-gpg textconv"
-}
-
-help_track() {
-cat <<EOS
-Add paths to Git attributes file
-
-    --no-excluded           Do not list excluded patterns
-    -? --help               Display this help message
-
-Start tracking the given path(s) with Git GPG. All files matching
-the <path> are added to .gitattributes. They will be encoded the
-next time they are committed to the repository.
-
-Content which is already committed to the repository, will remain
-as it is and will not be altered.
-
-The <path> argument can be a glob pattern or a file path.
-
-    ${INIT_CMD} ${FUNCNAME#help_} -- [path]
-
-If no paths are provided, simply list the currently-tracked paths.
-EOS
-}
-
-exec_track() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            'no-excluded')
-                SKIP_EXCLUDED=1
-                ;;
-            '?'|'help')
-                help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal track option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    if [[ -n "${@}" ]]; then
-        for file in ${@}; do
-            echo "${file} filter=gpg diff=gpg" >> .gitattributes
-            echo "Tracking \"${file}\""
-        done
-    else
-        echo "Listing tracked patterns"
-        for git_attr in $(find . -name .gitattributes); do
-            gitattr_grep 's/^(.*)[[:space:]]+filter=gpg[[:space:]]+diff=gpg$/\1/p' "${git_attr}"
-        done
-
-        if [[ -z "${SKIP_EXCLUDED}" ]]; then
-            echo "Listing excluded patterns"
-            for git_attr in $(find . -name .gitattributes); do
-                gitattr_grep 's/^(.*)[[:space:]]+-filter(=gpg)?([[:space:]]+.*)?$/\1/p' "${git_attr}"
-            done
-        fi
-    fi
-}
-
-help_untrack() {
-cat <<EOS
-Remove paths from Git attributes
-
-    -? --help               Display this help message
-
-Stop tracking the given path(s) through Git GPG. All files matching
-the <path> are removed from .gitattributes. The next time they are
-committed to the repository, they will be stored as they are.
-
-Content which is already committed to the repository, will remain
-as it is and will not be altered.
-
-The <path> argument can be a glob pattern or a file path.
-
-    ${INIT_CMD} ${FUNCNAME#help_} -- <path>
-
-EOS
-}
-
-exec_untrack() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            '?'|'help')
-                help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal untrack option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- path}
-
-    if [[ -f .gitattributes ]]; then
-        for file in ${@}; do
-            sed -i '' -E "/^${file}[[:space:]]+filter=gpg[[:space:]]+diff=gpg$/d" .gitattributes
-            echo "Untracking \"${file}\""
-        done
-    fi
-}
-
-help_keys() {
-cat <<EOS
-List all GPG keys which can decode a file
-
-    -s --staged             Work on the staged content
-    -? --help               Display this help message
-
-GPG can encode a file for multiple recipients using their public keys,
-see GPG's --recipient option for more details. This command will list
-all public keys used in the encoding of the committed file.
-
-    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
-
-EOS
-}
-
-exec_keys() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            's'|'staged')
-                GIT_OBJECT=":"
-                ;;
-            '?'|'help')
-                help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal keys option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- file}
-    : ${GIT_OBJECT:="HEAD:"}
-
-    ${GIT_BIN} cat-file -p "${GIT_OBJECT}${1}" | content_keys
-}
-
-# Filter Commands
-# ---------------
-
-help_clean() {
-cat <<EOS
-Git clean filter used to encrypt file content
-
-    -? --help               Display this help message
-
-This filter accepts a single additional parameter, which defines
-the path to the file the filter is working on.
-
-    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
-
-EOS
-}
-
-exec_clean() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            '?'|'help')
-                help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal clean option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- file}
-
-    local actual_content="$(base64 -)"
-    local actual_content_hash="${actual_content:+$(printf '%s' "${actual_content}" \
-        | base64 --decode - \
-        | ${GPG_BIN} --print-md sha256)}"
-
-    local git_content="$(${GIT_BIN} cat-file -p "HEAD:${1}" 2>/dev/null | base64 -)"
-    local git_content_hash="${git_content:+$(printf '%s' "${git_content}" \
-        | gpg_decrypt \
-        | ${GPG_BIN} --print-md sha256)}"
-
-    if [[ -n "${git_content}" && "${git_content_hash}" == "${actual_content_hash}" ]]; then
-        printf '%s' "${git_content}" | base64 --decode -
-    else
-        printf '%s' "${actual_content}" | gpg_encrypt "${1}"
-    fi
-}
-
-help_smudge() {
-cat <<EOS
-Git smudge filter used to decrypt file content
-
-    -? --help               Display this help message
-
-This filter accepts a single additional parameter, which defines
-the path to the file the filter is working on.
-
-    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
-
-EOS
-}
-
-exec_smudge() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            '?'|'help')
-                help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal smudge option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- file}
-
-    local content="$(base64 -)"
-
-    if ! printf '%s' "${content}" | gpg_decrypt; then
-        echo "WARNING: Unencrypted content detected in the repository -- ${1}" >&2
-        printf '%s' "${content}" | base64 --decode -
-    fi
-}
-
-help_textconv() {
-cat <<EOS
-Git textconv filter used to diff encrypted files
-
-    -? --help               Display this help message
-
-This filter accepts a single additional parameter, which defines
-the path to the file the filter is working on.
-
-    ${INIT_CMD} ${FUNCNAME#help_} -- <file>
-
-EOS
-}
-
-exec_textconv() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            '?'|'help')
-                help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    exit_error "${0}: illegal textconv option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- filepath}
-
-    cat "${1}"
-}
-
-# Internal Functions
-# ------------------
-
-init_var() {
-    : ${1:?Missing required parameter -- variable name}
-    : ${3:?Missing required parameter -- error message}
-    printf -v ${1} "${!1:-${2}}"
-    if [[ -z "${!1}"} ]]; then
-        exit_error "${3}"
-    fi
-}
-
-exit_error() {
-    echo ${1:?Missing required parameter -- error message} >&2
-    [[ -z "${COMMAND}" ]] && __help || help_${COMMAND}
-    exit ${2:-1}
-}
-
-getopts_long() {
-    : ${1:?Missing required parameter -- key container}
-    if [[ "${!1}" == '-' ]]; then
-        printf -v ${1} "${OPTARG%=*}"
-        OPTARG="${OPTARG#*=}"
-    fi
-}
-
-require_OPTARG() {
-    if [[ -z ${OPTARG} ]]; then
-        exit_error "${0}: option requires an argument -- ${OPTKEY}"
-    fi
-}
-
-gpg_encrypt() {
-    : ${1:?Missing required parameter -- file}
-    base64 --decode - | ${GPG_BIN} --encrypt --quiet --batch --no-tty $(gpg_recipients "${1}")
-}
-
-gpg_decrypt() {
-    base64 --decode - | ${GPG_BIN} --decrypt --quiet --batch --no-tty
-}
-
-gpg_recipients() {
-    : ${1:?Missing required parameter -- file}
-    for key in $(config_keys "${1}"); do
-        echo "--recipient ${key}"
-    done
-}
-
-config_keys() {
-    : ${1:?Missing required parameter -- file}
-    local gpg_keys="$(${GIT_BIN} config gpg.keys)"
-    if [[ -z "${gpg_keys}" ]]; then
-        ${GIT_BIN} config user.email
-    elif [[ "${gpg_keys:0:1}" == '!' ]]; then
-        ( ${gpg_keys:1} ) | parse_keysfile "${1}"
-    elif [[ -f "${GIT_TOPLEVEL_DIR}/${gpg_keys}" ]]; then
-        cat "${gpg_keys}" | parse_keysfile "${1}"
-    else
-        echo "${gpg_keys}"
-    fi
-}
-
-parse_keysfile() (
-    : ${1:?Missing required parameter -- file}
-    shopt -s extglob
-    while read -r pattern recipients; do
-        if [[ "${1}" == ${pattern} ]]; then
-            gpg_keys="${recipients}"
-        fi
-    done < <(cat - | sed -e '/^[[:space:]]*$/d' -e '/^[[:space:]]*#/d')
-    echo "${gpg_keys}"
-)
-
-content_keys() {
-    cat - \
-        | ${GPG_BIN} --list-only --list-packets --quiet --batch --no-tty \
-        | sed -n -E 's/^:pubkey enc packet: .* keyid (\w*)/\1/p'
-}
-
-gitattr_grep() {
-    : ${1:?Missing required argument -- regex}
-    : ${2:?Missing required argument -- path}
-    dir_prefix="${2%.gitattributes}"
-    for file in $(sed -n -E "${1}" "${git_attr}"); do
-        echo "    ${dir_prefix#./}${file} (${2#./})"
-    done
-}
-
-while getopts "l:qv?-:" OPTKEY; do
-    getopts_long OPTKEY
+while getopts_long ':cl:nq color no-color log: quiet version help' OPTKEY; do
     case ${OPTKEY} in
+        'c'|'color')
+            GIT_GPG_COLOR='true'
+            ;;
+        'n'|'no-color')
+            GIT_GPG_COLOR='false'
+            ;;
         'l'|'log')
-            require_OPTARG
             mkdir -p $(dirname ${OPTARG})
             exec 5>&1 6>&2 # Backup STDOUT and STDERR
             exec > ${OPTARG} 2>&1
@@ -466,26 +35,14 @@ while getopts "l:qv?-:" OPTKEY; do
         'version'|'help')
             COMMAND="${OPTKEY}"
             ;;
-        '?'|*)
-            # ? - matches invalid short options
-            # * - matches invalid long options
-
-
-
-
-
-        'v'|'version')
-            COMMAND='version'
+        '?')
+            die "illegal option -- ${OPTARG}"
             ;;
-        '?'|'help')
-            echo "---------------> HELP"
-            COMMAND='help'
+        ':')
+            die "option requires an argument -- ${OPTARG}"
             ;;
         *)
-            echo "---------------> ERROR"
-            if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                exit_error "${INIT_CMD}: illegal option -- ${OPTKEY}"
-            fi
+            die "unimplemented option -- ${OPTKEY}"
             ;;
     esac
 done
@@ -494,31 +51,29 @@ shift $(( OPTIND - 1 ))
 [[ "${1}" == "--" ]] && shift
 
 [[ -z "${COMMAND}" ]] && COMMAND="${1}" && shift
-[[ -z "${COMMAND}" ]] && exit_error "${INIT_CMD}: missing command"
+[[ -z "${COMMAND}" ]] && die "missing required command"
 
 case ${COMMAND} in
     'install'|'keys'|'track'|'untrack'|'clean'|'smudge'|'textconv')
         trap __exit EXIT
         __init
-        exec_${COMMAND} ${@}
         ;;
     'help')
         if [[ -z "${@}" ]]; then
             __help
-        elif type -t "help_${1}" >/dev/null; then
-            COMMAND="${1}" && shift
-            help_${COMMAND}
+            exit
+        elif type -t "__help_${1}" >/dev/null; then
+            __help_${1}
+            exit
         else
-            unset COMMAND
-            exit_error "${0}: undocumented command -- ${1}"
+            die "undocumented command -- ${1}"
         fi
-        exit
         ;;
     'version')
-        __version
+        version
         exit
         ;;
     *)
-        exit_error "${INIT_CMD}: illegal command -- ${COMMAND}"
+        die "illegal command -- ${COMMAND}"
         ;;
 esac
