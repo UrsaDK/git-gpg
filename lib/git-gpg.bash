@@ -73,6 +73,6 @@ set_var() {
 }
 
 use_color_bool() {
-    local is_tty="$(tty > /dev/null && echo 'true' || echo 'false')"
+    local is_tty="$(tty -s && echo 'true' || echo 'false')"
     echo "$(${GIT_BIN} config --get-colorbool color.gpg ${is_tty})"
 }
