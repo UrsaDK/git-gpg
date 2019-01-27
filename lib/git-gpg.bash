@@ -9,7 +9,7 @@ Options                 <> - required parameters
 -n --no-color           Disable color in errors and warnings
 -l --log=<path>         Redirect all output to a file
 -q --quiet              Suppress output of the script
--? --help               Display this help message
+--help                  Display this help message
 --version               Script and BASH version info
 
 Commands                <> - required parameters
@@ -44,7 +44,7 @@ __exit() {
 
 warn() {
     : ${1?Missing required parameter -- error message}
-    if [[ "${GIT_GPG_COLOR}" == 'true' ]]; then
+    if ${GIT_GPG_COLOR}; then
         printf "\e[33mWARNING: %s\e[0m\n" "${1}" >&2
     else
         echo "WARNING: ${1}" >&2
@@ -53,7 +53,7 @@ warn() {
 
 die() {
     : ${1?Missing required parameter -- error message}
-    if [[ "${GIT_GPG_COLOR}" == 'true' ]]; then
+    if ${GIT_GPG_COLOR}; then
         printf "\e[31m%s: %s\e[0m\n" "${BASH_SOURCE##*/}" "${1}" >&2
     else
         echo "${BASH_SOURCE##*/}: ${1}" >&2
@@ -72,7 +72,25 @@ set_var() {
     [[ -z "${!1}"} ]] && die "${3}"
 }
 
-use_color_bool() {
+should_git_use_color() {
     local is_tty="$(tty -s && echo 'true' || echo 'false')"
     echo "$(${GIT_BIN} config --get-colorbool color.gpg ${is_tty})"
+}
+
+get_command_opts() {
+    getopts_long ":${1} help" ${2} ${@:3} || return 1
+    case ${!2} in
+      'help')
+          __help_${COMMAND}
+          exit
+          ;;
+      '?')
+          die "illegal command option -- ${OPTARG}"
+          ;;
+      ':')
+          die "command option requires an argument -- ${OPTARG}"
+          ;;
+      *)
+          die "unimplemented command option -- ${OPTKEY}"
+          ;;
 }

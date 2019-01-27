@@ -8,12 +8,12 @@ eval "$(find "${SRC_DIR}/lib" \( -type f -o -type l \) -exec cat {} \;)"
 
 # --- --- ---
 
-set_var GIT_BIN "$(type -P git)" "Missing git executable (GIT_BIN)"
-set_var GPG_BIN "$(type -P gpg)" "Missing gpg executable (GPG_BIN)"
+set_var GIT_BIN "$(type -P git)" 'Missinggit executable (GIT_BIN)'
+set_var GPG_BIN "$(type -P gpg)" 'Missing gpg executable (GPG_BIN)'
 
 git rev-parse --is-inside-work-tree >/dev/null || exit
 : ${GIT_TOPLEVEL_DIR:="$(${GIT_BIN} rev-parse --show-toplevel)"}
-: ${GIT_GPG_COLOR:="$(use_color_bool)"}
+: ${GIT_GPG_COLOR:="$(should_git_use_color)"}
 
 while getopts_long ':cl:nq color no-color log: quiet version help' OPTKEY; do
     case ${OPTKEY} in
@@ -51,7 +51,7 @@ shift $(( OPTIND - 1 ))
 [[ "${1}" == "--" ]] && shift
 
 [[ -z "${COMMAND}" ]] && COMMAND="${1}" && shift
-[[ -z "${COMMAND}" ]] && die "missing required command"
+[[ -z "${COMMAND}" ]] && die 'missing required command'
 
 case ${COMMAND} in
     'install'|'keys'|'track'|'untrack'|'clean'|'smudge'|'textconv')

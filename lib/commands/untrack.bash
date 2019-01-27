@@ -19,24 +19,10 @@ EOS
 }
 
 __init_untrack() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            '?'|'help')
-                __help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    die "illegal untrack option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
+    get_command_opts '' OPTKEY
     shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- path}
+    [[ "${1}" == '--' ]] && shift
+    [[ -z "${1}" ]] && die 'missing command argument -- path'
 
     if [[ -f .gitattributes ]]; then
         for file in ${@}; do

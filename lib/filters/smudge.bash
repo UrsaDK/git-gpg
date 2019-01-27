@@ -13,29 +13,15 @@ EOS
 }
 
 __init_smudge() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
-        case ${OPTKEY} in
-            '?'|'help')
-                __help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    die "illegal smudge option -- ${OPTKEY}"
-                fi
-                ;;
-        esac
-    done
+    get_command_opts '' OPTKEY
     shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
-
-    : ${1:?Missing required parameter -- file}
+    [[ "${1}" == '--' ]] && shift
+    [[ -z "${1}" ]] && die 'missing command argument -- file'
 
     local content="$(base64 -)"
 
     if ! printf '%s' "${content}" | gpg_decrypt; then
-        warn "Unencrypted content detected in the repository -- ${1}"
+        warn "file is not encrypted -- ${1}"
         printf '%s' "${content}" | base64 --decode -
     fi
 }

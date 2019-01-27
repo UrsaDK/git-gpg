@@ -16,30 +16,21 @@ The <path> argument can be a glob pattern or a file path.
 
     ${BASH_SOURCE##*/} ${FUNCNAME#__help_} -- [path]
 
-If no paths are provided, simply list the currently-tracked paths.
+If no path is provided, simply list the currently-tracked paths.
 EOS
 }
 
 __init_track() {
-    while getopts "?-:" OPTKEY; do
-        getopts_long OPTKEY
+    SKIP_EXCLUDED='false'
+    while get_command_opts ' no-excluded' OPTKEY; do
         case ${OPTKEY} in
             'no-excluded')
-                SKIP_EXCLUDED=1
-                ;;
-            '?'|'help')
-                __help_${COMMAND}
-                exit
-                ;;
-            *)
-                if [[ "$OPTERR" == 1 && "${optspec:0:1}" != ":" ]]; then
-                    die "illegal track option -- ${OPTKEY}"
-                fi
+                SKIP_EXCLUDED='true'
                 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
-    [[ "${1}" == "--" ]] && shift
+    [[ "${1}" == '--' ]] && shift
 
     if [[ -n "${@}" ]]; then
         for file in ${@}; do
@@ -52,7 +43,7 @@ __init_track() {
             gitattr_grep 's/^(.*)[[:space:]]+filter=gpg[[:space:]]+diff=gpg$/\1/p' "${git_attr}"
         done
 
-        if [[ -z "${SKIP_EXCLUDED}" ]]; then
+        if ${SKIP_EXCLUDED}; then
             echo "Listing excluded patterns"
             for git_attr in $(find . -name .gitattributes); do
                 gitattr_grep 's/^(.*)[[:space:]]+-filter(=gpg)?([[:space:]]+.*)?$/\1/p' "${git_attr}"
