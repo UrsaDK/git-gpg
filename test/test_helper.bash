@@ -24,9 +24,9 @@ debug() {
 
 expect() {
   if ! test "${@}"; then
-    case ${*} in
-      -[[:alpha:]][[:space:]]*)
-        debug "[[ ${*:0:2} ACTUAL ]]" "${!#}"
+    case ${1} in
+      -[[:alpha:]])
+        debug "[[ ${1} ACTUAL ]]" "${!#}"
         ;;
       *)
         debug "${!#}" "${1}"
