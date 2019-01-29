@@ -2,41 +2,58 @@
 
 load test_helper
 
-@test "${GIT_GPG_CMD} with no arguments fails" {
+@test "${FEATURE}: with no arguments" {
   run ${GIT_GPG_BIN}
-  test "${status}" -gt 0
-  test "${lines[0]}" == "git-gpg: missing command"
+  expect "${status}" -ge 1
+  expect "${lines[0]}" == "git-gpg: missing required command"
 }
 
-@test "${GIT_GPG_CMD} with an invalid option fails" {
-  run ${GIT_GPG_BIN} -h
-  test "${status}" -gt 0
-  test "${lines[0]}" == "git-gpg: illegal option -- h"
+@test "${FEATURE}: with invalid short option" {
+  run ${GIT_GPG_BIN} -z
+  expect "${status}" -ge 1
+  expect "${lines[0]}" == "git-gpg: illegal option -- z"
 }
 
-@test "${GIT_GPG_CMD} with an invalid command fails" {
-  run ${GIT_GPG_BIN} non-existent-command
-  test "${status}" -gt 0
-  test "${lines[0]}" == "git-gpg: illegal command -- non-existent-command"
+@test "${FEATURE}: with invalid long option" {
+  run ${GIT_GPG_BIN} --zero
+  expect "${status}" -ge 1
+  expect "${lines[0]}" == "git-gpg: illegal option -- zero"
 }
 
-@test "${GIT_GPG_CMD} -q –– fails with no output" {
+@test "${FEATURE}: with an invalid command" {
+  run ${GIT_GPG_BIN} zero
+  expect "${status}" -ge 1
+  expect "${lines[0]}" == "git-gpg: illegal command -- zero"
+}
+
+@test "${FEATURE}: with -q shows no output" {
   run ${GIT_GPG_BIN} -q
-  test "${status}" -gt 0
-  test -z "${output}"
+  expect "${status}" -ge 1
+  expect -z "${output}"
 }
 
-@test "${GIT_GPG_CMD} --quiet –– fails with no output" {
+@test "${FEATURE}: with --quiet shows no output" {
   run ${GIT_GPG_BIN} --quiet
-  test "${status}" -gt 0
-  test -z "${output}"
+  expect "${status}" -ge 1
+  expect -z "${output}"
 }
 
-@test "${GIT_GPG_CMD} --quiet version –– succeeds" {
-  run ${GIT_GPG_BIN} --quiet version
-  echo "# --> STATUS: =>${status}<="
-  test "${status}" -eq 0
-  test -z "${output}"
+@test "${FEATURE}: with -l but without specifying a logfile" {
+  run ${GIT_GPG_BIN} -l
+  expect "${status}" -ge 1
+  expect "${output}" == 'git-gpg: option requires an argument -- l'
 }
 
-# @test "${GIT_GPG_CMD} -l --log
+@test "${FEATURE}: with --log but without specifying a logfile" {
+  run ${GIT_GPG_BIN} --log
+  expect "${status}" -ge 1
+  expect "${output}" == 'git-gpg: option requires an argument -- log'
+}
+
+@test "${FEATURE}: with --log and a log file" {
+  local log_file="${TMP_DIR}/output.log"
+  run ${GIT_GPG_BIN} -l "${log_file}"
+  expect "${status}" -ge 1
+  expect -f "${log_file}"
+  expect "$(cat ${log_file})" == "git-gpg: missing required command"
+}
