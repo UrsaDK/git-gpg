@@ -93,4 +93,5 @@ get_command_opts() {
       *)
           die "unimplemented command option -- ${OPTKEY}"
           ;;
+    esac
 }
