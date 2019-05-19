@@ -1,3 +1,4 @@
 [submodule "vendor/getopts_long"]
 	path = vendor/getopts_long
 	url = https://github.com/UmkaDK/getopts_long.git
+    branch = master
