@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+set -e
+
+: "${GIT_GPG_BIN:=./bin}"
+: "${GIT_GPG_LIB:=./lib}"
+: "${GIT_GPG_TEST:=./test}"
+: "${GIT_GPG_COVERAGE:=./coverage}"
+
+__exit() {
+  echo "${0}: ${1:?Missing required parameter -- error message}" >&2
+  exit "${2:-1}"
+}
+
+path_exists() {
+  : "${1:?Missing required argument -- directory path}"
+  [[ -e "${1}" ]] || __exit "Path not found -- ${1}"
+}
+
+color_diff() {
+  : "${1:?Missing required argument -- label color}"
+  : "${2:?Missing required argument -- coverage diff}"
+  : "${3:?Missing required argument -- version sha}"
+  printf "\e[01;%sm%+.2f%%\e[00m compared to %s" "${1}" "${2}" "${3}"
+}
+
+print_coverage_diff() {
+  : "${1:?Missing required argument -- new code coverage}"
+
+  local sha
+  sha="$(head -c7 /home/VERSION)"
+  local coverage
+  coverage="$(jq -r .percent_covered "/home/coverage/coverage.json")"
+  local diff
+  diff=$(echo "${coverage} - ${1}" | bc -l)
+
+  if tty -s && [[ "${diff}" -gt '0' ]]; then color_diff 32 "${diff}" "${sha}"
+  elif tty -s && [[ "${diff}" -lt '0' ]]; then color_diff 31 "${diff}" "${sha}"
+  elif [[ "${diff}" == '0' ]]; then printf "unchanged compared to %s" "${sha}"
+  else printf "%+.2f%% compared to %s" "${diff}" "${sha}"; fi
+}
+
+path_exists "${GIT_GPG_LIB}"
+path_exists "${GIT_GPG_TEST}"
+
+# Run shellcheck
+echo "Checking shell code: ${GIT_GPG_LIB} ${GIT_GPG_TEST} ${GIT_GPG_BIN}"
+shellcheck -f tty -s bash -a \
+  "${GIT_GPG_LIB}"/* \
+  "${GIT_GPG_TEST}"/*.bash \
+  "${GIT_GPG_BIN}"/*
+
+# Run bats
+TEST_DIR=( "${@:-${GIT_GPG_TEST}}" )
+echo "Running tests: ${TEST_DIR[*]} "
+bats --tap --recursive "${TEST_DIR[@]}"
+[ -n "${*}" ] && exit
+
+# Setup exit trap
+TEMP_DIR="$(mktemp -d -t kcov.XXXXXXXXX)"
+trap 'rm -Rf ${TEMP_DIR}' EXIT
+
+# Run kcov
+echo "Generating coverage report: ${GIT_GPG_COVERAGE}/index.html"
+kcov --clean --include-path="${GIT_GPG_LIB}" --exclude-pattern="getopts_long.bash" \
+  "${TEMP_DIR}" \
+  bats --recursive "${GIT_GPG_TEST}"
+
+# Clean up kcov report
+rm "${TEMP_DIR}"/bats/{bcov.css,amber.png,glass.png}
+sed -i 's#"../data/bcov.css"#"data/bcov.css"#g' "${TEMP_DIR}"/bats/*.html
+sed -i -E 's#/(home|mnt)/##g' \
+  "${TEMP_DIR}"/bats/*.{json,xml} "${TEMP_DIR}"/bats/metadata/*
+
+# Present kcov report
+rm -Rf "${GIT_GPG_COVERAGE}"
+cp -LR "${TEMP_DIR}/bats" "${GIT_GPG_COVERAGE}"
+
+# Total code coverage
+COVERAGE="$(jq -r .percent_covered "${GIT_GPG_COVERAGE}/coverage.json")"
+printf "Code covered: %s%% " "${COVERAGE}"
+
+# Code coverage diff
+if [[ -e "/.dockerenv" && "${PWD}" != "/home" ]]; then
+  printf "(%s)" "$(print_coverage_diff "${COVERAGE}")"
+fi
+
+# Finish code coverage stats with a new line
+echo
