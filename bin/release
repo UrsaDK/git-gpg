@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-: ${LIB_DIR:="$(git rev-parse --show-toplevel)/lib"}
-find "${LIB_DIR}" \( -type f -o -type l \) -exec cat {} \; | gpg --store --armor
