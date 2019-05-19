@@ -71,7 +71,7 @@ RUN cd ./git-gpg \
         ./.git \
         ./docker-fs
 WORKDIR /home/git-gpg
-ENTRYPOINT ["/etc/entrypoint.d/test_payload"]
+ENTRYPOINT ["/etc/entrypoint.d/login_shell"]
 
 FROM base AS final
 WORKDIR /home
