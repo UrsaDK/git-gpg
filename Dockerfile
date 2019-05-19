@@ -69,7 +69,7 @@ RUN cd ./git-gpg \
         | head -5 > ./VERSION \
     && rm -Rf \
         ./.git \
-        ./docker-fs \
+        ./docker-fs
 WORKDIR /home/git-gpg
 ENTRYPOINT ["/etc/entrypoint.d/test_payload"]
 
