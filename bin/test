@@ -44,11 +44,10 @@ path_exists "${GIT_GPG_LIB}"
 path_exists "${GIT_GPG_TEST}"
 
 # Run shellcheck
-echo "Checking shell code: ${GIT_GPG_LIB} ${GIT_GPG_TEST} ${GIT_GPG_BIN}"
-shellcheck -f tty -s bash -a \
-  "${GIT_GPG_LIB}"/* \
-  "${GIT_GPG_TEST}"/*.bash \
-  "${GIT_GPG_BIN}"/*
+echo "Checking shell code: ${GIT_GPG_LIB} ${GIT_GPG_BIN} ${GIT_GPG_TEST}"
+shellcheck --format="tty" --shell="bash" --check-sourced \
+  $(find "${GIT_GPG_LIB}" "${GIT_GPG_BIN}" -type f) \
+  $(find "${GIT_GPG_TEST}" -type f -name *.bash)
 
 # Run bats
 TEST_DIR=( "${@:-${GIT_GPG_TEST}}" )
