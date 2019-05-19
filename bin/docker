@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+__help() {
+cat <<END_OF_HELP
+Usage: ${0} <commands> [options]
+where 'commands' are one of the following:
+
+  build  -   options are passed to 'docker image build'.
+             See 'docker image build --help' for a full list of options.
+
+  run    -   apart for the following exceptions, all options are passed as
+             arguments to './bin/test' running inside the container:
+
+             - l   run docker container and open a login shell
+
+END_OF_HELP
+}
+
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+: "${GIT_BRANCH:=unknown}"
+
+[[ "${GIT_BRANCH}" == 'master' ]] && TAG='' || TAG=":${GIT_BRANCH}"
+
+CONTAINER="umkadk/git-gpg${TAG}"
+CMD="${1}" && shift
+
+case "${CMD}" in
+  'b'|'build')
+    if [[ -z "${*}" ]]; then docker image build --tag "${CONTAINER}" "${PWD}"
+    else docker image build "${@}" --tag "${CONTAINER}" "${PWD}"; fi
+    ;;
+  'r'|'run')
+    docker container run --rm --init -it -v "${PWD}:/mnt" "${CONTAINER}" "${@}"
+    ;;
+  '')
+    __help >&2
+    exit 1
+    ;;
+  *)
+    echo "${0}: Unknown command -- ${CMD}" >&2
+    exit 1
+    ;;
+esac
