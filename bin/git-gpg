@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 : ${SRC_DIR:="$([[ -L "${BASH_SOURCE}" ]] \
-    && dirname "$(dirname "$(readlink "${BASH_SOURCE}")")" \
-    || dirname "$(cd "$(dirname "${BASH_SOURCE}")" && pwd)")"}
+    && dirname "$(dirname "$(readlink "${BASH_SOURCE[0]}")")" \
+    || dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"}
 VERSION="$(cat "${SRC_DIR}/VERSION")"
 eval "$(find "${SRC_DIR}/lib" \( -type f -o -type l \) -exec cat {} \;)"
 
@@ -12,8 +12,8 @@ set_var GIT_BIN "$(type -P git)" 'Missinggit executable (GIT_BIN)'
 set_var GPG_BIN "$(type -P gpg)" 'Missing gpg executable (GPG_BIN)'
 
 git rev-parse --is-inside-work-tree >/dev/null || exit
-: ${GIT_TOPLEVEL_DIR:="$(${GIT_BIN} rev-parse --show-toplevel)"}
-: ${GIT_GPG_COLOR:="$(should_git_use_color)"}
+: "${GIT_TOPLEVEL_DIR:="$(${GIT_BIN} rev-parse --show-toplevel)"}"
+: "${GIT_GPG_COLOR:="$(should_git_use_color)"}"
 
 while getopts_long ':cl:nq color no-color log: quiet version help' OPTKEY; do
     case ${OPTKEY} in
@@ -24,9 +24,9 @@ while getopts_long ':cl:nq color no-color log: quiet version help' OPTKEY; do
             GIT_GPG_COLOR='false'
             ;;
         'l'|'log')
-            mkdir -p $(dirname ${OPTARG})
+            mkdir -p "$(dirname "${OPTARG}")"
             exec 5>&1 6>&2 # Backup STDOUT and STDERR
-            exec > ${OPTARG} 2>&1
+            exec > "${OPTARG}" 2>&1
             ;;
         'q'|'quiet')
             exec 5>&1 6>&2 # Backup STDOUT and STDERR
@@ -59,11 +59,11 @@ case ${COMMAND} in
         __init
         ;;
     'help')
-        if [[ -z "${@}" ]]; then
+        if [[ -z "${*}" ]]; then
             __help
             exit
         elif type -t "__help_${1}" >/dev/null; then
-            __help_${1}
+            "__help_${1}"
             exit
         else
             die "undocumented command -- ${1}"

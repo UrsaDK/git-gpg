@@ -1,10 +1,11 @@
-: ${GIT_TOPLEVEL_DIR:="$(git rev-parse --show-toplevel)"}
-: ${GIT_TEST_DIR:="${GIT_TOPLEVEL_DIR}/test"}
+: "${GIT_TOPLEVEL_DIR:=$(git rev-parse --show-toplevel)}"
+: "${GIT_TEST_DIR:=${GIT_TOPLEVEL_DIR}/test}"
 
-: ${GIT_GPG_BIN:="${GIT_TOPLEVEL_DIR}/bin/git-gpg --no-color"}
-: ${FIXTURES_DIR:="${GIT_TEST_DIR}/fixtures"}
-: ${TMP_DIR:="${GIT_TEST_DIR}/tmp"}
+: "${GIT_GPG_BIN:=${GIT_TOPLEVEL_DIR}/bin/git-gpg --no-color}"
+: "${FIXTURES_DIR:=${GIT_TEST_DIR}/fixtures}"
+: "${TMP_DIR:=${GIT_TEST_DIR}/tmp}"
 
+# shellcheck disable=SC2034
 FEATURE="$(basename "${BATS_TEST_FILENAME}" '.bats' | tr '_' ' ')"
 
 setup() {

@@ -34,16 +34,16 @@ EOS
 
 __init() {
     # [Constructor] Initialise script's sub-command
-    type -t "__init_${COMMAND}" >/dev/null && __init_${COMMAND}
+    type -t "__init_${COMMAND}" >/dev/null && "__init_${COMMAND}"
 }
 
 __exit() {
     # [Destructor] Executed when the script exits
-    type -t "__exit_${COMMAND}" >/dev/null && __exit_${COMMAND}
+    type -t "__exit_${COMMAND}" >/dev/null && "__exit_${COMMAND}"
 }
 
 warn() {
-    : ${1?Missing required parameter -- error message}
+    : "${1?Missing required parameter -- error message}"
     if ${GIT_GPG_COLOR}; then
         printf "\e[33mWARNING: %s\e[0m\n" "${1}" >&2
     else
@@ -52,13 +52,13 @@ warn() {
 }
 
 die() {
-    : ${1?Missing required parameter -- error message}
+    : "${1?Missing required parameter -- error message}"
     if ${GIT_GPG_COLOR}; then
         printf "\e[31m%s: %s\e[0m\n" "${BASH_SOURCE##*/}" "${1}" >&2
     else
         echo "${BASH_SOURCE##*/}: ${1}" >&2
     fi
-    exit ${2:-1}
+    exit "${2:-1}"
 }
 
 version() {
@@ -66,22 +66,23 @@ version() {
 }
 
 set_var() {
-    : ${1:?Missing required parameter -- variable name}
-    : ${3:?Missing required parameter -- error message}
-    printf -v ${1} "${!1:-${2}}"
-    [[ -z "${!1}"} ]] && die "${3}"
+    : "${1:?Missing required parameter -- variable name}"
+    : "${3:?Missing required parameter -- error message}"
+    printf -v "${1}" '%s' "${!1:-${2}}"
+    [[ -z "${!1}" ]] && die "${3}"
 }
 
 should_git_use_color() {
-    local is_tty="$(tty -s && echo 'true' || echo 'false')"
-    echo "$(${GIT_BIN} config --get-colorbool color.gpg ${is_tty})"
+    local is_tty
+    is_tty="$(tty -s && echo 'true' || echo 'false')"
+    "${GIT_BIN}" config --get-colorbool color.gpg "${is_tty}"
 }
 
 get_command_opts() {
-    getopts_long ":${1} help" ${2} ${@:3} || return 1
+    getopts_long ":${1} help" "${2}" "${@:3}" || return 1
     case ${!2} in
       'help')
-          __help_${COMMAND}
+          "__help_${COMMAND}"
           exit
           ;;
       '?')

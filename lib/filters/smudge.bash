@@ -18,7 +18,8 @@ __init_smudge() {
     [[ "${1}" == '--' ]] && shift
     [[ -z "${1}" ]] && die 'missing command argument -- file'
 
-    local content="$(base64 -)"
+    local content
+    content="$(base64 -)"
 
     if ! printf '%s' "${content}" | gpg_decrypt; then
         warn "file is not encrypted -- ${1}"

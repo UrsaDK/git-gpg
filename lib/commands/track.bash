@@ -32,8 +32,8 @@ __init_track() {
     shift $(( OPTIND - 1 ))
     [[ "${1}" == '--' ]] && shift
 
-    if [[ -n "${@}" ]]; then
-        for file in ${@}; do
+    if [[ -n "${*}" ]]; then
+        for file in "${@}"; do
             echo "${file} filter=gpg diff=gpg" >> .gitattributes
             echo "Tracking \"${file}\""
         done
@@ -53,8 +53,8 @@ __init_track() {
 }
 
 gitattr_grep() {
-    : ${1:?Missing required argument -- regex}
-    : ${2:?Missing required argument -- path}
+    : "${1:?Missing required argument -- regex}"
+    : "${2:?Missing required argument -- path}"
     dir_prefix="${2%.gitattributes}"
     for file in $(sed -n -E "${1}" "${git_attr}"); do
         echo "    ${dir_prefix#./}${file} (${2#./})"

@@ -25,7 +25,7 @@ __init_untrack() {
     [[ -z "${1}" ]] && die 'missing command argument -- path'
 
     if [[ -f .gitattributes ]]; then
-        for file in ${@}; do
+        for file in "${@}"; do
             sed -i '' -E "/^${file}[[:space:]]+filter=gpg[[:space:]]+diff=gpg$/d" .gitattributes
             echo "Untracking \"${file}\""
         done

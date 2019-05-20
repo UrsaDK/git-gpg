@@ -18,13 +18,15 @@ __init_clean() {
     [[ "${1}" == '--' ]] && shift
     [[ -z "${1}" ]] && die 'missing command argument -- file'
 
-    local actual_content="$(base64 -)"
-    local actual_content_hash="${actual_content:+$(printf '%s' "${actual_content}" \
+    local actual_content actual_content_hash
+    actual_content="$(base64 -)"
+    actual_content_hash="${actual_content:+$(printf '%s' "${actual_content}" \
         | base64 --decode - \
         | ${GPG_BIN} --print-md sha256)}"
 
-    local git_content="$(${GIT_BIN} cat-file -p "HEAD:${1}" 2>/dev/null | base64 -)"
-    local git_content_hash="${git_content:+$(printf '%s' "${git_content}" \
+    local git_content git_content_hash
+    git_content="$(${GIT_BIN} cat-file -p "HEAD:${1}" 2>/dev/null | base64 -)"
+    git_content_hash="${git_content:+$(printf '%s' "${git_content}" \
         | gpg_decrypt \
         | ${GPG_BIN} --print-md sha256)}"
 
@@ -36,34 +38,36 @@ __init_clean() {
 }
 
 gpg_encrypt() {
-    : ${1:?Missing required parameter -- file}
+    : "${1:?Missing required parameter -- file}"
     local gpg_recipients
     for recipient in $(gpg_recipients_for "${1}"); do
         gpg_recipients+=" --recipient ${recipient}"
     done
 
     base64 --decode - \
-        | ${GPG_BIN} --encrypt --quiet --batch --no-tty ${gpg_recipients}
+        | ${GPG_BIN} --encrypt --quiet --batch --no-tty "${gpg_recipients}"
 }
 
 gpg_recipients() {
-    : ${1:?Missing required parameter -- file}
-    local gpg_keys="$(${GIT_BIN} config gpg.keys)"
+    : "${1:?Missing required parameter -- file}"
+    local gpg_keys
+    gpg_keys="$(${GIT_BIN} config gpg.keys)"
     if [[ -z "${gpg_keys}" ]]; then
         ${GIT_BIN} config user.email
     elif [[ "${gpg_keys:0:1}" == '!' ]]; then
         ( ${gpg_keys:1} ) | parse_keysfile "${1}"
     elif [[ -f "${GIT_TOPLEVEL_DIR}/${gpg_keys}" ]]; then
-        cat "${gpg_keys}" | parse_keysfile "${1}"
+        parse_keysfile "${1}" < "${gpg_keys}"
     else
         echo "${gpg_keys}"
     fi
 }
 
 parse_keysfile() (
-    : ${1:?Missing required parameter -- file}
+    : "${1:?Missing required parameter -- file}"
     shopt -s extglob
     while read -r pattern recipients; do
+        # shellcheck disable=SC2053
         if [[ "${1}" == ${pattern} ]]; then
             gpg_keys="${recipients}"
         fi

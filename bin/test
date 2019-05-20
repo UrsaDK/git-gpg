@@ -27,11 +27,9 @@ color_diff() {
 print_coverage_diff() {
   : "${1:?Missing required argument -- new code coverage}"
 
-  local sha
+  local sha coverage diff
   sha="$(head -c7 /home/VERSION)"
-  local coverage
   coverage="$(jq -r .percent_covered "/home/coverage/coverage.json")"
-  local diff
   diff=$(echo "${coverage} - ${1}" | bc -l)
 
   if tty -s && [[ "${diff}" -gt '0' ]]; then color_diff 32 "${diff}" "${sha}"
@@ -45,6 +43,7 @@ path_exists "${GIT_GPG_TEST}"
 
 # Run shellcheck
 echo "Checking shell code: ${GIT_GPG_LIB} ${GIT_GPG_BIN} ${GIT_GPG_TEST}"
+# shellcheck disable=SC2046,SC2061,SC2035
 shellcheck --format="tty" --shell="bash" --check-sourced \
   $(find "${GIT_GPG_LIB}" "${GIT_GPG_BIN}" -type f) \
   $(find "${GIT_GPG_TEST}" -type f -name *.bash)
