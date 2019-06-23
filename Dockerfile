@@ -1,6 +1,6 @@
 FROM debian:stable-slim AS base
 LABEL maintainer="UmkaDK <umka.dk@icloud.com>"
-COPY ./docker-fs /
+COPY ./dockerfs /
 RUN apt-get -y update \
     && apt-get -y install \
         bash \
@@ -69,7 +69,7 @@ RUN cd ./git-gpg \
         | head -5 > ./VERSION \
     && rm -Rf \
         ./.git \
-        ./docker-fs
+        ./dockerfs
 WORKDIR /home/git-gpg
 ENTRYPOINT ["/etc/entrypoint.d/login_shell"]
 
