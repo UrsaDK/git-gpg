@@ -1,5 +1,5 @@
 FROM debian:stable-slim AS base
-LABEL maintainer="UmkaDK <umka.dk@icloud.com>"
+LABEL maintainer="Dmytro Konstantinov <ursa.dk@icloud.com>"
 COPY ./dockerfs /
 RUN apt-get -y update \
     && apt-get -y install \
