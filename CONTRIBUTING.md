@@ -17,7 +17,3 @@ The following files and directories (relative to the root directory of an applic
   - `bin/docker` - a custom replacement for `docker-compose`. This script is used to build and run the project via docker. For more information see `bin/docker --help`.
 
   - `dockerfs` - represents root file system of the docker container. All files placed into this directory will be copied to the container preserving their mode and path.
-
-> ️📖 **NOTE**
->
-> Docker swarm is the primary method of deployment for this project. Thus, a concerted efforts is made to avoid adding a dependency on `docker-compose`.
