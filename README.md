@@ -1,6 +1,6 @@
 <div align="center">
 
-  [![git-gpg logo](https://avatars.githubusercontent.com/u/2833247?s=160)](#)<br>
+  [![git-gpg logo](https://raw.githubusercontent.com/UrsaDK/git-gpg/master/docs/images/logo.png)](#)<br>
 
   [![stable branch](https://img.shields.io/badge/dynamic/json.svg?logo=github&color=lightgrey&label=stable&query=%24.default_branch&url=https%3A%2F%2Fapi.github.com%2Frepos%2FUrsaDK%2Fgit-gpg)](https://github.com/UrsaDK/git-gpg)
   [![latest release](https://img.shields.io/badge/dynamic/json.svg?logo=docker&color=blue&label=release&query=%24.name&url=https%3A%2F%2Fapi.github.com%2Frepos%2FUrsaDK%2Fgit-gpg%2Freleases%2Flatest)](https://hub.docker.com/r/ursadk/git-gpg)
