@@ -1,9 +1,9 @@
-FROM crystallang/crystal AS base
+FROM crystallang/crystal:0.34.0-alpine AS base
 LABEL org.opencontainers.image.vendor="Dmytro Konstantinov" \
     org.opencontainers.image.source="https://github.com/UrsaDK/git-gpg" \
     org.opencontainers.image.revision="${BUILD_SHA}" \
     org.opencontainers.image.created="${BUILD_DATE}"
-RUN deluser guest 2>/dev/null \
+RUN deluser guest \
     && rm -Rf \
         /home \
         /etc/inittab \
