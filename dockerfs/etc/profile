@@ -1,0 +1,18 @@
+# If the environment variable ENV is set on entry to an interactive shell, or
+# in `profile` of a login shell, `/bin/ash` will source the file named in ENV.
+# Bash replicates this behaviour by sourcing ENV file via `~/.bashrc`.
+#
+# Unsetting ENV here avoids an infinite loop during shell startup:
+unset ENV
+
+export CHARSET="${CHARSET:-UTF-8}"
+export LANG="${LANG:-C.UTF-8}"
+export PATH="${PATH:-${HOME}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}"
+export PS1="${PS1:-\h:\w\$ }"
+umask 022
+
+for script in /etc/profile.d/*.sh ; do
+        if [ -r "$script" ] ; then
+                . "$script"
+        fi
+done

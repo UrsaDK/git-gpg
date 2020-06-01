@@ -1,0 +1,26 @@
+# NOTE: Synchronised with .gitignore
+
+/secrets
+
+# Per-directory rubbish
+.DS_Store
+Thumbs.db
+
+# Customisation and backups
+*.override
+*.override.*
+*~
+
+# Auto-generated files
+/.vscode
+/coverage
+/log
+/tmp
+*.log
+
+# Not needed in a container
+/.docker*
+/.git*
+/bin/docker
+/docker-compose*
+/Dockerfile
