@@ -10,9 +10,11 @@ Thumbs.db
 *~
 
 # Auto-generated files
+/.shards
 /.vscode
 /coverage
 /log
 /tmp
 /VERSION
+*.dwarf
 *.log
