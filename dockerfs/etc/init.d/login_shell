@@ -1,9 +1,13 @@
 #!/usr/bin/env sh
 
-if test -z "${*}"; then
+if [[ "${SHELL##*/}" == 'bash' && "${0}" != "${BASH_SOURCE}" ]]; then
+  # Executed when this file is sourced via `~/.bashrc`
+  # NOTE: This code is sourced! Shebang has no effect!!
+  exec bash -l
+elif test -z "${*}"; then
   # Start a new interactive login shell if the user calls
   # this script with no arguments, eg: via docker ENDPOINT.
-  exec sh -l
+  exec ${SHELL:-sh} -l
 elif grep -Fxq "$(type -P "${1}")" /etc/shells; then
   # Executed only if the user requests a specific shell that
   # is available on the current system (see /etc/shells)
@@ -11,5 +15,5 @@ elif grep -Fxq "$(type -P "${1}")" /etc/shells; then
 else
   # Replicate the behaviour of `docker exec`, delegating
   # child reaping and signal handling to docker --init
-  exec sh -l -c "${*}"
+  exec ${SHELL:-sh} -l -c "${*}"
 fi
