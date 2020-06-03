@@ -1,0 +1,25 @@
+name: git-gpg
+version: 0.1.0
+
+authors:
+  - Dmytro Konstantinov <ursa.dk@icloud.com>
+
+description: |
+  Allows secure storage of sensitive information within git repository
+
+repository: https://github.com/UrsaDK/git-gpg
+
+targets:
+  git-gpg:
+    main: src/git-gpg.cr
+
+# dependencies:
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 0.12.0
+
+crystal: 0.34.0
+
+license: GPL-2.0
