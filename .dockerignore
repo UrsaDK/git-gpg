@@ -22,5 +22,6 @@ Thumbs.db
 /.docker*
 /.git*
 /bin/docker
+/build
 /docker-compose*
 /Dockerfile

@@ -13,6 +13,7 @@ Thumbs.db
 /.shards
 /.vscode
 /bin
+/build
 /coverage
 /lib
 /log
