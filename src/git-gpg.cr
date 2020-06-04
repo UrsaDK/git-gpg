@@ -26,9 +26,13 @@ module GitGPG
     end
   end
 
+  def version
+    shard[:version]
+  end
+
   private def parser_options(parser)
     parser.on("-v", "--version", "Reports the version number.") do
-      puts shard[:version]
+      puts version
       exit
     end
     parser.on("-?", "--help", "Shows this help message") do
@@ -51,7 +55,7 @@ module GitGPG
       Commands::Untrack.main(parser.command_args)
     end
     parser.cmd("version", "Report the version number.") do
-      puts shard[:version]
+      puts version
       exit
     end
     parser.cmd("help COMMAND", "Lookup help for a command") do
