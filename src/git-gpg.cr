@@ -54,7 +54,7 @@ module GitGPG
       puts shard[:version]
       exit
     end
-    parser.cmd("help", "Lookup help for a command") do
+    parser.cmd("help COMMAND", "Lookup help for a command") do
       puts parser
       exit
     end

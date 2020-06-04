@@ -51,14 +51,9 @@ module GitGPG
       self.class.command(args)
     end
 
-    def dl(item, definition)
-      append_flag(item, definition)
-    end
-
     def cmd(command : String, description : String, &block : String ->)
       append_flag(command, description)
-      @commands << Command.new(command, block)
+      @commands << Command.new(command.split.first, block)
     end
-
   end
 end
