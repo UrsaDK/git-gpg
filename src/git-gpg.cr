@@ -3,8 +3,8 @@ require "./git-gpg/**"
 module GitGPG
   extend self
 
-  def main
-    OptionParser.parse(OptionParser.option_args) do |parser|
+  def main(args = ARGV)
+    OptionParser.parse(OptionParser.option_args(args)) do |parser|
       parser.banner = <<-END_OF_BANNER
       Usage: #{shard[:name]} [options] <commands>
       #{shard[:description]}\n
@@ -27,11 +27,11 @@ module GitGPG
   end
 
   private def parser_options(parser)
-    parser.on "-v", "--version", "Report the version number." do
+    parser.on("-v", "--version", "Reports the version number.") do
       puts shard[:version]
       exit
     end
-    parser.on "-?", "--help", "Shows this help message" do
+    parser.on("-?", "--help", "Shows this help message") do
       puts parser
       exit
     end
