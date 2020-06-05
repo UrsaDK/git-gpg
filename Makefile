@@ -28,7 +28,7 @@ src/git-gpg: $(shell find src/git-gpg -type f -name *.cr)
 
 test: shard.lock bin/git-gpg
 	./bin/ameba --all
-	crystal spec --progress
+	crystal spec --progress --order random
 
 bin/%: src/%.cr src/%
 	@shards build $(@F) --progress
