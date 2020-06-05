@@ -9,7 +9,7 @@ module GitGPG
   end
 
   def main(args = ARGV)
-    OptionParser.parse(OptionParser.option_args(args)) do |parser|
+    OptionParser.parse(args) do |parser|
       parser.banner = <<-END_OF_BANNER
       Usage: #{shard[:name]} [options] <commands>
       #{shard[:description]}\n

@@ -61,11 +61,11 @@ module GitGPG
     end
 
     def parse(args = ARGV)
-      super(args)
-
       @option_args = self.class.option_args(args)
       @command_args = self.class.command_args(args)
       @command = self.class.command(args)
+
+      super(option_args)
 
       exec = commands.find { |c| c.command == command }
       if exec.nil? && command.empty?
