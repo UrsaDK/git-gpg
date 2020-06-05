@@ -11,7 +11,7 @@ module GitGPG
   def main(args = ARGV)
     OptionParser.parse(args) do |parser|
       parser.banner = <<-END_OF_BANNER
-      Usage: #{shard[:name]} [options] <commands>
+      Usage: #{name} [options] <commands>
       #{shard[:description]}\n
       END_OF_BANNER
 
@@ -26,9 +26,13 @@ module GitGPG
 
       parser.separator <<-END_OF_SEPARATOR
       \nRun a command followed by --help to see command specific information,
-      for example:  #{shard[:name]} install --help
+      for example:  #{name} install --help
       END_OF_SEPARATOR
     end
+  end
+
+  def name
+    shard[:name].split('-').join(' ')
   end
 
   def version
@@ -75,8 +79,8 @@ module GitGPG
         puts parser
         exit
       else
-        parser.command_args << "--help"
         parser.command = parser.command_args.shift
+        parser.command_args.unshift("--help")
         parser.execute_command
       end
     end
@@ -111,7 +115,7 @@ module GitGPG
       exit(1)
     end
     parser.missing_command do
-      STDERR.puts "ERROR: missing #{shard[:name]} command"
+      STDERR.puts "ERROR: missing #{name} command"
       puts "\n#{parser}" unless verbosity == Verbosity::Quiet
       exit(1)
     end

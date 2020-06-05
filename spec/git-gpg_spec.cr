@@ -3,9 +3,16 @@ require "./spec_helper"
 
 describe GitGPG do
   git_gpg = "#{__DIR__}/../bin/git-gpg"
+  shard = begin
+    shard_yml = "#{__DIR__}/../shard.yml"
+    YAML.parse(File.read(shard_yml))
+  end
 
   it "responds to .main" do
     GitGPG.responds_to?(:main).should be_true
+  end
+  it "responds to .name" do
+    GitGPG.responds_to?(:name).should be_true
   end
   it "responds to .version" do
     GitGPG.responds_to?(:version).should be_true
@@ -14,12 +21,19 @@ describe GitGPG do
     GitGPG.responds_to?(:verbosity).should be_true
   end
 
-  context "version" do
-    shard = begin
-      shard_yml = "#{__DIR__}/../shard.yml"
-      YAML.parse(File.read(shard_yml))
+  context ".name" do
+    it "returns: git gpg" do
+      GitGPG.name.should eq("git gpg")
     end
+  end
 
+  context ".verbosity" do
+    it "defaults to NORMAL" do
+      GitGPG.verbosity.should eq(GitGPG::Verbosity::Normal)
+    end
+  end
+
+  context "version" do
     it "is returned by .version" do
       GitGPG.version.should eq(shard["version"])
     end
@@ -39,26 +53,22 @@ describe GitGPG do
 
   context "help" do
     it "is shown by -?" do
-      `#{git_gpg} -?`.should start_with("Usage: git-gpg ")
+      `#{git_gpg} -?`.should start_with("Usage: #{GitGPG.name} ")
       $?.success?.should be_true
     end
     it "is shown by --help" do
-      `#{git_gpg} --help`.should start_with("Usage: git-gpg ")
+      `#{git_gpg} --help`.should start_with("Usage: #{GitGPG.name} ")
       $?.success?.should be_true
     end
     it "is shown by help command" do
-      `#{git_gpg} help`.should start_with("Usage: git-gpg ")
+      `#{git_gpg} help`.should start_with("Usage: #{GitGPG.name} ")
       $?.success?.should be_true
     end
     it "is shown by help command with any argument" do
-      `#{git_gpg} help --invalid-option`.should start_with("Usage: git-gpg ")
+      `#{git_gpg} help --invalid-option`.should start_with(
+        "Usage: #{GitGPG.name} [options] <commands>"
+      )
       $?.success?.should be_true
-    end
-  end
-
-  context ".verbosity" do
-    it "defaults to NORMAL" do
-      GitGPG.verbosity.should eq(GitGPG::Verbosity::Normal)
     end
   end
 
@@ -71,7 +81,9 @@ describe GitGPG do
       $?.success?.should be_false
     end
     it "shows help message" do
-      `#{git_gpg} #{args} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      `#{git_gpg} #{args} 2>/dev/null`.should start_with(
+        "\nUsage: #{GitGPG.name} [options] <commands>"
+      )
       $?.success?.should be_false
     end
   end
@@ -105,7 +117,9 @@ describe GitGPG do
       $?.success?.should be_false
     end
     it "shows help message" do
-      `#{git_gpg} #{args} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      `#{git_gpg} #{args} 2>/dev/null`.should start_with(
+        "\nUsage: #{GitGPG.name} [options] <commands>"
+      )
       $?.success?.should be_false
     end
   end
@@ -134,12 +148,12 @@ describe GitGPG do
   context "with missing command" do
     it "shows error message" do
       `#{git_gpg} 2>&1 >/dev/null`.should start_with(
-        "ERROR: missing git-gpg command"
+        "ERROR: missing #{GitGPG.name} command"
       )
       $?.success?.should be_false
     end
     it "shows help message" do
-      `#{git_gpg} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      `#{git_gpg} 2>/dev/null`.should start_with("\nUsage: #{GitGPG.name} ")
       $?.success?.should be_false
     end
   end
@@ -148,7 +162,7 @@ describe GitGPG do
     args = "--quiet"
     it "shows error message" do
       `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with(
-        "ERROR: missing git-gpg command"
+        "ERROR: missing #{GitGPG.name} command"
       )
       $?.success?.should be_false
     end
