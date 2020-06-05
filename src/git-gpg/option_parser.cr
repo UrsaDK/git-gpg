@@ -53,7 +53,7 @@ module GitGPG
       @command = ""
 
       @invalid_command = ->(command : String) do
-        raise InvalidCommand.new(command)
+        raise InvalidCommand.new(command) unless commands.empty?
       end
       @missing_command = ->(command : String) do
         raise MissingCommand.new(command) unless commands.empty?
@@ -70,6 +70,8 @@ module GitGPG
     end
 
     def execute_command
+      return if commands.empty?
+
       exec = commands.find { |c| c.command == command }
       if exec.nil? && command.empty?
         @missing_command.call("")
