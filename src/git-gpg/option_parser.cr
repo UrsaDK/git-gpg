@@ -17,7 +17,7 @@ module GitGPG
     record Command, command : String, block : String ->
     private getter commands : Array(Command)
 
-    getter command : String
+    property command : String
     getter option_args : Array(String)
     getter command_args : Array(String)
 
@@ -66,7 +66,10 @@ module GitGPG
       @command = self.class.command(args)
 
       super(option_args)
+      execute_command
+    end
 
+    def execute_command
       exec = commands.find { |c| c.command == command }
       if exec.nil? && command.empty?
         @missing_command.call("")

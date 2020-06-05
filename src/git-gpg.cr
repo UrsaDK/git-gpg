@@ -71,8 +71,14 @@ module GitGPG
       exit
     end
     parser.cmd("help COMMAND", "Lookup help for a command") do
-      puts parser
-      exit
+      if parser.command_args.empty? || parser.command_args[0].starts_with?('-')
+        puts parser
+        exit
+      else
+        parser.command_args << "--help"
+        parser.command = parser.command_args.shift
+        parser.execute_command
+      end
     end
   end
 
@@ -100,7 +106,7 @@ module GitGPG
       exit(1)
     end
     parser.invalid_command do |command|
-      STDERR.puts "ERROR: #{command} is not a valid option"
+      STDERR.puts "ERROR: #{command} is not a valid command"
       puts "\n#{parser}" unless verbosity == Verbosity::Quiet
       exit(1)
     end
