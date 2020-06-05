@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+crystal play -b 0.0.0.0 >/dev/null &
+exec /etc/init.d/login_shell "${@}"
