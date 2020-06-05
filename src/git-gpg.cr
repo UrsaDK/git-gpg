@@ -99,11 +99,6 @@ module GitGPG
   end
 
   private def parser_errors(parser)
-    parser.missing_option do |option|
-      STDERR.puts "ERROR: #{option} is missing an argument"
-      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
-      exit(1)
-    end
     parser.invalid_option do |option|
       STDERR.puts "ERROR: #{option} is not a valid option"
       puts "\n#{parser}" unless verbosity == Verbosity::Quiet
