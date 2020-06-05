@@ -11,7 +11,7 @@
 
 # Git-GPG
 
-Git extension that allows secure storage of sensitive information within a repository by using GPG to transparently encrypting / decrypting file content. Once encrypted, the information within the file becomes only available to the authorised users.
+Git extension that allows secure storage of sensitive information within a repository. This is achieved by transparently encrypting / decrypting files with GPG: the files are stored encrypted within the repository, but authorised users see decrypted content when the files are checked out locally. The tool works in a completely transparent manner and requires neither input from the user, nor changes to the user workflow.
 
 - [Requirements](#requirements)
 
