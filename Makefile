@@ -5,7 +5,7 @@ ARCH := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m)
 # Build the release
 # -----------------
 
-all: build/git-gpg-$(ARCH)
+all: shard.lock build/git-gpg-$(ARCH)
 	@rm -f build/*.dwarf
 
 build/%-linux-x86_64: src/%.cr src/% | build
@@ -13,6 +13,10 @@ build/%-linux-x86_64: src/%.cr src/% | build
 
 build/%-darwin-x86_64: src/%.cr src/% | build
 	crystal build $< -o $@ --release --progress
+
+shard.lock: shard.yml
+	@shards install
+	@shards prune
 
 build:
 	mkdir -p build
@@ -25,10 +29,6 @@ src/git-gpg: $(shell find src/git-gpg -type f -name *.cr)
 test: shard.lock bin/git-gpg
 	./bin/ameba --all
 	crystal spec --progress
-
-shard.lock: shard.yml
-	@shards install
-	@shards prune
 
 bin/%: src/%.cr src/%
 	@shards build $(@F) --progress
