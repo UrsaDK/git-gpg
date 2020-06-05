@@ -27,8 +27,12 @@ describe GitGPG do
       `#{git_gpg} -v`.strip.should eq(shard["version"])
       $?.success?.should be_true
     end
-    it "is shown by using --version" do
+    it "is shown by --version" do
       `#{git_gpg} --version`.strip.should eq(shard["version"])
+      $?.success?.should be_true
+    end
+    it "is shown by version command" do
+      `#{git_gpg} version`.strip.should eq(shard["version"])
       $?.success?.should be_true
     end
   end
@@ -51,25 +55,73 @@ describe GitGPG do
   end
 
   context "with invalid option" do
-    option = "--invalid-option"
+    args = "--invalid-option"
     it "shows error message" do
-      `#{git_gpg} #{option} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with("ERROR: ")
       $?.success?.should be_false
     end
     it "shows help message" do
-      `#{git_gpg} #{option} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      `#{git_gpg} #{args} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
       $?.success?.should be_false
     end
   end
 
   context "with invalid option in quiet mode" do
-    option = "--invalid-option --quiet"
+    args = "--invalid-option --quiet"
     it "shows error message" do
-      `#{git_gpg} #{option} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with("ERROR: ")
       $?.success?.should be_false
     end
     it "does not show help" do
-      `#{git_gpg} #{option} 2>/dev/null`.should be_empty
+      `#{git_gpg} #{args} 2>/dev/null`.should be_empty
+      $?.success?.should be_false
+    end
+  end
+
+  context "with invalid command" do
+    args = "invalid-command"
+    it "shows error message" do
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      $?.success?.should be_false
+    end
+    it "shows help message" do
+      `#{git_gpg} #{args} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      $?.success?.should be_false
+    end
+  end
+
+  context "with invalid command in quiet mode" do
+    args = "--quiet invalid-command"
+    it "shows error message" do
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      $?.success?.should be_false
+    end
+    it "does not show help" do
+      `#{git_gpg} #{args} 2>/dev/null`.should be_empty
+      $?.success?.should be_false
+    end
+  end
+
+  context "with missing command" do
+    args = "invalid-command"
+    it "shows error message" do
+      `#{git_gpg} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      $?.success?.should be_false
+    end
+    it "shows help message" do
+      `#{git_gpg} #{args} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      $?.success?.should be_false
+    end
+  end
+
+  context "with missing command in quiet mode" do
+    args = "--quiet"
+    it "shows error message" do
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      $?.success?.should be_false
+    end
+    it "does not show help" do
+      `#{git_gpg} #{args} 2>/dev/null`.should be_empty
       $?.success?.should be_false
     end
   end

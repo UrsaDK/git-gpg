@@ -99,6 +99,16 @@ module GitGPG
       puts "\n#{parser}" unless verbosity == Verbosity::Quiet
       exit(1)
     end
+    parser.invalid_command do |command|
+      STDERR.puts "ERROR: #{command} is not a valid option"
+      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
+      exit(1)
+    end
+    parser.missing_command do
+      STDERR.puts "ERROR: missing #{shard[:name]} command"
+      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
+      exit(1)
+    end
   end
 
   private def shard
@@ -106,4 +116,6 @@ module GitGPG
   end
 end
 
-GitGPG.main
+{% unless @type.has_constant? "Spec" %}
+  GitGPG.main
+{% end %}
