@@ -10,6 +10,9 @@ describe GitGPG do
   it "responds to .version" do
     GitGPG.responds_to?(:version).should be_true
   end
+  it "responds to .verbosity" do
+    GitGPG.responds_to?(:verbosity).should be_true
+  end
 
   context "version" do
     shard = begin
@@ -41,14 +44,32 @@ describe GitGPG do
     end
   end
 
+  context ".verbosity" do
+    it "defaults to NORMAL" do
+      GitGPG.verbosity.should eq(GitGPG::Verbosity::Normal)
+    end
+  end
+
   context "with invalid option" do
     option = "--invalid-option"
     it "shows error message" do
       `#{git_gpg} #{option} 2>&1 >/dev/null`.should start_with("ERROR: ")
       $?.success?.should be_false
     end
-    it "shows help" do
+    it "shows help message" do
       `#{git_gpg} #{option} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
+      $?.success?.should be_false
+    end
+  end
+
+  context "with invalid option in quiet mode" do
+    option = "--invalid-option --quiet"
+    it "shows error message" do
+      `#{git_gpg} #{option} 2>&1 >/dev/null`.should start_with("ERROR: ")
+      $?.success?.should be_false
+    end
+    it "does not show help" do
+      `#{git_gpg} #{option} 2>/dev/null`.should be_empty
       $?.success?.should be_false
     end
   end

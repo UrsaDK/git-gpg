@@ -3,6 +3,11 @@ require "./git-gpg/**"
 module GitGPG
   extend self
 
+  enum Verbosity
+    Normal
+    Quiet
+  end
+
   def main(args = ARGV)
     OptionParser.parse(OptionParser.option_args(args)) do |parser|
       parser.banner = <<-END_OF_BANNER
@@ -30,7 +35,14 @@ module GitGPG
     shard[:version]
   end
 
+  def verbosity : Verbosity
+    @@verbosity || Verbosity::Normal
+  end
+
   private def parser_options(parser)
+    parser.on("-q", "--quiet", "Reduces output to warnings and errors") do
+      @@verbosity = Verbosity::Quiet
+    end
     parser.on("-v", "--version", "Reports the version number.") do
       puts version
       exit
@@ -79,12 +91,12 @@ module GitGPG
   private def parser_errors(parser)
     parser.missing_option do |option|
       STDERR.puts "ERROR: #{option} is missing an argument"
-      puts "\n#{parser}"
+      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
       exit(1)
     end
     parser.invalid_option do |option|
       STDERR.puts "ERROR: #{option} is not a valid option"
-      puts "\n#{parser}"
+      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
       exit(1)
     end
   end
