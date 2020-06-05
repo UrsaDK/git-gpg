@@ -3,6 +3,22 @@ require "./git-gpg/**"
 module GitGPG
   extend self
 
+  class Error < ::Exception
+    getter info : String
+
+    def initialize(message : String = "", info : String = "")
+      super("ERROR: #{message}")
+      @info = info
+    end
+
+    def show
+      STDERR.puts message
+      return if info.empty? || GitGPG.verbosity == Verbosity::Quiet
+
+      STDOUT.puts "\n#{info}"
+    end
+  end
+
   enum Verbosity
     Normal
     Quiet
@@ -29,6 +45,9 @@ module GitGPG
       for example:  #{name} install --help
       END_OF_SEPARATOR
     end
+  rescue e : Error
+    e.show
+    exit(1)
   end
 
   def name
@@ -54,6 +73,18 @@ module GitGPG
     parser.on("-?", "--help", "Shows this help message") do
       puts parser
       exit
+    end
+  end
+
+  private def parser_errors(parser)
+    parser.invalid_option do |option|
+      raise GitGPG::Error.new("#{option} is not a valid option", parser.to_s)
+    end
+    parser.invalid_command do |command|
+      raise GitGPG::Error.new("#{command} is not a valid command", parser.to_s)
+    end
+    parser.missing_command do
+      raise GitGPG::Error.new("Missing #{name} command", parser.to_s)
     end
   end
 
@@ -95,24 +126,6 @@ module GitGPG
     end
     parser.cmd("textconv", "Git filter used to diff encrypted files") do
       Filters::Textconv.main(parser.command_args)
-    end
-  end
-
-  private def parser_errors(parser)
-    parser.invalid_option do |option|
-      STDERR.puts "ERROR: #{option} is not a valid option"
-      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
-      exit(1)
-    end
-    parser.invalid_command do |command|
-      STDERR.puts "ERROR: #{command} is not a valid command"
-      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
-      exit(1)
-    end
-    parser.missing_command do
-      STDERR.puts "ERROR: missing #{name} command"
-      puts "\n#{parser}" unless verbosity == Verbosity::Quiet
-      exit(1)
     end
   end
 

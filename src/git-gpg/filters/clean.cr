@@ -21,9 +21,8 @@ module GitGPG
           END_OF_SEPARATOR
 
           parser.invalid_option do |option|
-            STDERR.puts "ERROR: #{option} is not a valid option"
-            puts "\n#{parser}" unless GitGPG.verbosity == Verbosity::Quiet
-            exit(1)
+            raise GitGPG::Error.new("#{option} is not a valid option",
+                                    parser.to_s)
           end
         end
 

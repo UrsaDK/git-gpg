@@ -154,7 +154,7 @@ describe GitGPG do
   context "with missing command" do
     it "shows error message" do
       `#{git_gpg} 2>&1 >/dev/null`.should start_with(
-        "ERROR: missing #{GitGPG.name} command"
+        "ERROR: Missing #{GitGPG.name} command"
       )
       $?.success?.should be_false
     end
@@ -168,7 +168,7 @@ describe GitGPG do
     args = "--quiet"
     it "shows error message" do
       `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with(
-        "ERROR: missing #{GitGPG.name} command"
+        "ERROR: Missing #{GitGPG.name} command"
       )
       $?.success?.should be_false
     end
