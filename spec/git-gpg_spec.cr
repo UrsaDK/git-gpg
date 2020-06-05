@@ -98,6 +98,12 @@ describe GitGPG do
       )
       $?.success?.should be_false
     end
+    it "shows error message (help)" do
+      `#{git_gpg} help #{args} 2>&1 >/dev/null`.should start_with(
+        "ERROR: invalid-command is not a valid command"
+      )
+      $?.success?.should be_false
+    end
     it "shows help message" do
       `#{git_gpg} #{args} 2>/dev/null`.should start_with("\nUsage: git-gpg ")
       $?.success?.should be_false
@@ -107,6 +113,13 @@ describe GitGPG do
   context "with invalid command in quiet mode" do
     args = "--quiet invalid-command"
     it "shows error message" do
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with(
+        "ERROR: invalid-command is not a valid command"
+      )
+      $?.success?.should be_false
+    end
+    it "shows error message (help)" do
+      args = "--quiet help invalid-command"
       `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with(
         "ERROR: invalid-command is not a valid command"
       )
@@ -134,7 +147,7 @@ describe GitGPG do
   context "with missing command in quiet mode" do
     args = "--quiet"
     it "shows error message" do
-      `#{git_gpg} 2>&1 >/dev/null`.should start_with(
+      `#{git_gpg} #{args} 2>&1 >/dev/null`.should start_with(
         "ERROR: missing git-gpg command"
       )
       $?.success?.should be_false
