@@ -3,7 +3,7 @@ require "../../spec_helper"
 describe GitGPG::Filters::Clean do
   usage_header = "Usage: #{GitGPG.name} clean [options] <file>"
 
-  context "help" do
+  describe "help" do
     git_gpg_output("help clean sub-command", start_with(usage_header))
   end
 

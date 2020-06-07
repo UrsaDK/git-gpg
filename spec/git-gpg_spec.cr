@@ -9,19 +9,19 @@ describe GitGPG do
   it_responds_to(GitGPG, verbosity)
   it_responds_to(GitGPG, version)
 
-  context ".name" do
+  describe ".name" do
     it "returns: git gpg" do
       GitGPG.name.should eq("git gpg")
     end
   end
 
-  context ".verbosity" do
+  describe ".verbosity" do
     it "defaults to NORMAL" do
       GitGPG.verbosity.should eq(GitGPG::Verbosity::Normal)
     end
   end
 
-  context "version" do
+  describe "version" do
     shard_version = begin
       shard_yml = "#{__DIR__}/../shard.yml"
       YAML.parse(File.read(shard_yml))["version"]
@@ -36,7 +36,7 @@ describe GitGPG do
     end
   end
 
-  context "help" do
+  describe "help" do
     git_gpg_output("-?", start_with(usage_header))
     git_gpg_output("--help", start_with(usage_header))
     git_gpg_output("help", start_with(usage_header))
