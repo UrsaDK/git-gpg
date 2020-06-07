@@ -21,16 +21,9 @@ RUN cp -Rd /etc/skel/.??* /root \
 ENV ENV="/etc/init.d/login_shell"
 ENTRYPOINT ["/etc/init.d/login_shell"]
 
-FROM base AS development
+FROM base AS latest
 USER guest
 WORKDIR /mnt
 VOLUME ["/mnt"]
 EXPOSE 8080
 ENTRYPOINT ["/etc/init.d/crystal_play"]
-
-FROM base AS latest
-USER guest
-WORKDIR /home
-COPY --chown=guest . .
-RUN rm -Rf dockerfs
-ENTRYPOINT ["/etc/init.d/login_shell"]

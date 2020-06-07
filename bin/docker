@@ -62,9 +62,8 @@ case "${COMMAND}" in
     ;;
   'r'|'run')
     [[ -t 1 ]] && IT='-it' # Check if output is attached to a TTY
-    [[ "${TAG}" == 'development' ]] && EXPOSE='-p 8080:8080'
     docker container run ${GITHUB_ACTIONS:+-u root} \
-      --rm --init ${IT} ${EXPOSE} -v "${PWD}:/mnt" "${IMAGE}" "${@}"
+      --rm --init ${IT} -p 8080:8080 -v "${PWD}:/mnt" "${IMAGE}" "${@}"
     ;;
   'a'|'attach')
     CONTAINER_ID="$(docker container ls -qlf "ancestor=${IMAGE}")"
