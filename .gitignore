@@ -7,6 +7,8 @@ Thumbs.db
 # Customisation and backups
 *.override
 *.override.*
+*\ copy
+*\ copy.*
 *~
 
 # Auto-generated files
