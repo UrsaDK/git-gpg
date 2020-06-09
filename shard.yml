@@ -5,7 +5,7 @@ authors:
   - Dmytro Konstantinov <ursa.dk@icloud.com>
 
 description: |
-  Allows secure storage of sensitive information within git repository
+  Allows secure storage of sensitive information within git repository.
 
 repository: https://github.com/UrsaDK/git-gpg
 
