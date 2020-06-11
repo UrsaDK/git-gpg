@@ -6,7 +6,7 @@ module GitGPG
       def main(args)
         OptionParser.parse(args) do |parser|
           parser.banner = <<-END_OF_BANNER
-          Usage: #{GitGPG.name} clean [options] <file>
+          Usage: #{Attributes.name} clean [options] <file>
           Git clean filter used to encrypt file content\n
           END_OF_BANNER
 

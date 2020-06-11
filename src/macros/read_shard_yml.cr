@@ -16,4 +16,10 @@ def shard_tuple
   }
 end
 
-puts shard_tuple
+shard_tuple.each do |key, value|
+  puts <<-END_OF_METHOD
+  def #{key}
+    #{value}
+  end
+  END_OF_METHOD
+end
