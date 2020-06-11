@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.34.0-alpine AS base
+FROM crystallang/crystal:0.35.0-alpine AS base
 LABEL org.opencontainers.image.vendor="Dmytro Konstantinov" \
     org.opencontainers.image.source="https://github.com/UrsaDK/git-gpg" \
     org.opencontainers.image.revision="${BUILD_SHA}" \
