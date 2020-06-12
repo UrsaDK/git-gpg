@@ -17,9 +17,17 @@ def shard_tuple
 end
 
 shard_tuple.each do |key, value|
-  puts <<-END_OF_METHOD
-  def #{key}
-    #{value}
+  if value.is_a?(String)
+    puts <<-END_OF_METHOD
+    def #{key}
+      "#{value}"
+    end
+    END_OF_METHOD
+  else
+    puts <<-END_OF_METHOD
+    def #{key}
+      #{value}
+    end
+    END_OF_METHOD
   end
-  END_OF_METHOD
 end
