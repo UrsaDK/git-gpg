@@ -1,5 +1,5 @@
-require "./git-gpg/option_parser"
-require "./git-gpg/exceptions/*"
+require "./patches/**"
+require "./git-gpg/**"
 
 module GitGPG
   extend self

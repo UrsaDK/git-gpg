@@ -1,4 +1,4 @@
-require "option_parser"
+require "../patches/option_parser"
 
 module GitGPG
   class OptionParser < ::OptionParser
