@@ -11,8 +11,8 @@ module GitGPG
 
   class_property verbosity = Verbosity::Normal
 
-  def main(args = ARGV)
-    OptionParser.parse(args)
+  def main
+    OptionParser.parse
   rescue e : Exceptions::OptionInfo
     puts e.message
     exit
