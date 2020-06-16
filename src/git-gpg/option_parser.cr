@@ -4,13 +4,13 @@ module GitGPG
   module OptionParser
     extend self
 
-    class_property args : Array(String) do
+    class_getter args : Array(String) do
       ARGV unless ARGV.includes?("help")
 
       (ARGV - ["help"]).push("--help")
     end
 
-    class_property parser do
+    class_getter parser do
       ::OptionParser.new do |parser|
         parser.banner = "#{parser_banner}\n"
 
