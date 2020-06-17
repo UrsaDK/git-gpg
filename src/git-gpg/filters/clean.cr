@@ -11,7 +11,8 @@ module GitGPG
       private def parser_banner
         <<-END_OF_BANNER
         Usage: #{Attributes.name} clean [options] <file>
-        Git clean filter used to encrypt file content
+        Git clean filter is used to encrypt file content just before
+        the file is staged for a commit.
         END_OF_BANNER
       end
 

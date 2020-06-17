@@ -49,12 +49,12 @@ module GitGPG
         parser.on("clean", "Git filter used to encrypt file content") do
           Filters::Clean.main
         end
-        # parser.on("smudge", "Git filter used to decrypt file content") do
-        #   Filters::Smudge.main(parser.command_args)
-        # end
-        # parser.on("textconv", "Git filter used to diff encrypted files") do
-        #   Filters::Textconv.main(parser.command_args)
-        # end
+        parser.on("smudge", "Git filter used to decrypt file content") do
+          Filters::Smudge.main
+        end
+        parser.on("textconv", "Git filter used to diff encrypted files") do
+          Filters::Textconv.main
+        end
 
         parser.separator("\n#{parser_footer}")
       end
