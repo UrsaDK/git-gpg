@@ -18,11 +18,11 @@ module GitGPG
     exit
   rescue e : Exceptions::OptionError
     STDERR.puts e.message
-    puts "\n#{e.explanation}" unless verbosity_quiet? || e.explanation.empty?
+    puts "\n#{e.explanation}" unless quiet? || e.explanation.empty?
     exit(1)
   end
 
-  private def verbosity_quiet?
+  private def quiet?
     verbosity == Verbosity::Quiet
   end
 end
