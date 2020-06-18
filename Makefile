@@ -1,4 +1,4 @@
-.PHONY: test clean distclean
+.PHONY: test fixtures clean distclean
 
 ARCH := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m)
 
@@ -33,6 +33,11 @@ test: shard.lock bin/git-gpg
 bin/%: src/%.cr src/%
 	@shards build $(@F) --progress
 	@rm -f bin/*.dwarf
+
+fixtures:
+	gpg --encrypt --quiet --batch --no-tty \
+		--recipient git-gpg-dev@ursa.dk \
+		--output ./spec/fixtures/encrypted.bin ./spec/fixtures/decrypted.txt
 
 # Clean up jobs
 # -------------
