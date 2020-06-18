@@ -19,3 +19,4 @@ Git extension that allows secure storage of sensitive information within a repos
 ## Requirements
 
   - `git`
+  - `gpg`

@@ -2,11 +2,18 @@
 
 An overview of the repository layout, and how to build the project from source. Contribution to the project are always welcome. New ideas, bugs, and pull requests, all will be very much appreciated.
 
+- [Build Requirements](#build-requirements)
+- [Significant Locations](#significant-locations)
+
 ## Build Requirements
 
-  - `crystal`
   - `docker`
+
+which will create a container with all of the following tools:
+
+  - `crystal`
   - `git`
+  - `gpg`
 
 ## Significant Locations
 
@@ -17,3 +24,5 @@ The following files and directories (relative to the root directory of an applic
   - `bin/docker` - a custom replacement for `docker-compose`. This script is used to build and run the project via docker. For more information see `bin/docker --help`.
 
   - `dockerfs` - represents root file system of the docker container. All files placed into this directory will be copied to the container preserving their mode and path.
+
+  - `spec` - a directory where all the tests and tests related data is stored, including fixture files and gpg keys used for testing.
