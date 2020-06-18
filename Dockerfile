@@ -10,6 +10,7 @@ RUN deluser guest \
     && apk --no-cache upgrade \
     && apk --no-cache add \
         bash \
+        gnupg \
         less
 COPY ./dockerfs /
 RUN cp -Rd /etc/skel/.??* /root \
@@ -23,6 +24,10 @@ ENTRYPOINT ["/etc/init.d/login_shell"]
 
 FROM base AS latest
 USER guest
+WORKDIR /home
+COPY ./spec/gpg-keys/* .
+RUN gpg --import ./git-gpg-dev@ursa.dk.key \
+    && gpg --import-ownertrust ./gpg-keys.trust
 WORKDIR /mnt
 VOLUME ["/mnt"]
 EXPOSE 8080
