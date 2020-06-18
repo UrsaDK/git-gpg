@@ -10,6 +10,7 @@ RUN deluser guest \
     && apk --no-cache upgrade \
     && apk --no-cache add \
         bash \
+        git \
         gnupg \
         less
 COPY ./dockerfs /
