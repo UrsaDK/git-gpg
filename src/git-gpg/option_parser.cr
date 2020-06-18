@@ -5,7 +5,7 @@ module GitGPG
     extend self
 
     class_getter args : Array(String) do
-      ARGV unless ARGV.includes?("help")
+      return ARGV unless ARGV.includes?("help")
 
       (ARGV - ["help"]).push("--help")
     end
@@ -68,8 +68,6 @@ module GitGPG
         )
       end
 
-      parser.parse(args)
-
       if command.nil?
         raise Exceptions::OptionError.new(
           "Missing argument -- command",
@@ -81,6 +79,8 @@ module GitGPG
           parser.to_s
         )
       end
+
+      parser.parse(args)
     end
 
     private def command
