@@ -3,9 +3,33 @@ module GitGPG
     module Clean
       extend self
 
+      class_property file : String?
+
+      class_getter input : String { STDIN.gets_to_end }
+      class_getter output : Array(String) = [] of String
+
       def main
         OptionParser.parser.banner = "#{parser_banner}\n"
         OptionParser.parser.separator("\n#{parser_footer}")
+
+        OptionParser.parser.unknown_args do
+          if OptionParser.args.empty?
+            raise Exceptions::OptionError.new(
+              "Missing argument -- file",
+              OptionParser.parser.to_s
+            )
+          elsif OptionParser.args.size > 1
+            raise Exceptions::OptionError.new(
+              "Invalid argument -- file",
+              OptionParser.parser.to_s
+            )
+          else
+            file = OptionParser.args.first
+          end
+        end
+
+        # TODO: encrypt file content
+        puts output.join("\n") unless output.empty?
       end
 
       private def parser_banner
@@ -19,7 +43,8 @@ module GitGPG
       private def parser_footer
         <<-END_OF_FOOTER
         This filter accepts a single parameter which defines the path
-        to the file the filter is working on.
+        to the file the filter is working on. The content of the file
+        should be provided to the filter on standard input.
         END_OF_FOOTER
       end
     end
