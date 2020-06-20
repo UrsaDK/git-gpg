@@ -14,7 +14,7 @@ module GitGPG
       ::OptionParser.new do |parser|
         parser.banner = "#{parser_banner}\n"
 
-        parser.on("-q", "--quiet", "Reduces output to warnings and errors") do
+        parser.on("-q", "--quiet", "Only show warnings & errors") do
           GitGPG.verbosity = Verbosity::Quiet
         end
         parser.on("-v", "--version", "Reports the version number") do
@@ -31,12 +31,12 @@ module GitGPG
         # parser.on("keys", "List all GPG recipients that can decode a file") do
         #   Commands::Keys.main(parser.command_args)
         # end
-        # parser.on("track", "Add paths to Git attributes file") do
-        #   Commands::Track.main(parser.command_args)
-        # end
-        # parser.on("untrack", "Remove paths from Git attributes") do
-        #   Commands::Untrack.main(parser.command_args)
-        # end
+        parser.on("track", "Add paths to Git attributes file") do
+          Commands::Track.main
+        end
+        parser.on("untrack", "Remove paths from Git attributes") do
+          Commands::Untrack.main
+        end
         parser.on("version", "Report the version number") do
           raise Exceptions::OptionInfo.new(Attributes.version)
         end
