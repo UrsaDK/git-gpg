@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.35.0-alpine AS base
+FROM crystallang/crystal:0.35.1-alpine AS base
 LABEL org.opencontainers.image.vendor="Dmytro Konstantinov" \
     org.opencontainers.image.source="https://github.com/UrsaDK/git-gpg" \
     org.opencontainers.image.revision="${BUILD_SHA}" \
@@ -11,6 +11,7 @@ RUN deluser guest \
     && apk --no-cache add \
         bash \
         git \
+        git-lfs \
         gnupg \
         less
 COPY ./dockerfs /
