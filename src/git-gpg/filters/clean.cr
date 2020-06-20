@@ -20,7 +20,7 @@ module GitGPG
             )
           elsif OptionParser.args.size > 1
             raise Exceptions::OptionError.new(
-              "Invalid argument -- file",
+              "Invalid argument -- #{OptionParser.args}",
               OptionParser.parser.to_s
             )
           else
@@ -28,7 +28,7 @@ module GitGPG
           end
         end
 
-        # TODO: encrypt file content
+        output << GPG.encrypt(file, input, recipients)
         puts output.join("\n") unless output.empty?
       end
 
@@ -46,6 +46,10 @@ module GitGPG
         to the file the filter is working on. The content of the file
         should be provided to the filter on standard input.
         END_OF_FOOTER
+      end
+
+      private def recipients
+        Git.attribute(file, "recipients")
       end
     end
   end
