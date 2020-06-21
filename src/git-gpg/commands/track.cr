@@ -47,10 +47,10 @@ module GitGPG
           - #{Attributes.name} track /my/secret.txt
           - #{Attributes.name} track "/config/*.yml"
 
-        If no recipients are given than the recipient list will default to
-        a single entry: the current user.
+        If no recipients are given than the recipient list will default the
+        current user, as reported by: git config user.email
 
-        If no pattern is provided, than list all currently-tracked paths.
+        If no pattern is provided, then list all currently-tracked paths.
         END_OF_FOOTER
       end
 
