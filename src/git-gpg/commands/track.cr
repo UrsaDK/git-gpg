@@ -4,7 +4,7 @@ module GitGPG
       extend self
 
       class_getter recipients = [] of String
-      class_getter show_excluded_patterns = true
+      class_property? show_excluded_patterns : Bool = true
 
       def main
         OptionParser.parser.banner = "#{parser_banner}\n"
@@ -15,7 +15,7 @@ module GitGPG
         end
         OptionParser.parser.on("--no-excluded",
                                "Do not list excluded patterns") do
-          @@show_excluded_patterns = false
+          show_excluded_patterns = false
         end
         OptionParser.parser.separator("\n#{parser_footer}")
 
