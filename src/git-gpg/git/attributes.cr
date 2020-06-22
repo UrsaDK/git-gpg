@@ -19,7 +19,7 @@ module GitGPG
       end
 
       def delete(pattern)
-        lines = File.read_lines(file).reject { |l| line.starts_with?(pattern) }
+        lines = File.read_lines(file).reject { |l| l.split.first == pattern }
         File.write(file, lines.join("\n"))
         @attributes = read_attributes
       end
