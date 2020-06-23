@@ -55,12 +55,16 @@ module GitGPG
       end
 
       private def list_tracked
-        puts "--> Command::Track.list_tracked_path"
+        puts "--> Command::Track.list_tracked"
+        "Command::Track.list_tracked_path"
       end
 
-      private def add_tracked(paths)
-        puts "--> Command::Track.add_tracked_path"
-        puts "  PATHS: #{paths}"
+      private def add_tracked(pattern)
+        gitattributes = Git::Attributes.new(".gitattributes")
+        raise DuplicatePattern.new(pattern) if gitattributes.includes?(pattern)
+
+        gitattributes.add(pattern, "filter=gpg", "diff=gpg",
+                          "recipients=#{recipients.join(',')}")
       end
     end
   end
