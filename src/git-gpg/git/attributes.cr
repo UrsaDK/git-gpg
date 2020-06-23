@@ -9,7 +9,13 @@ module GitGPG
         @attributes = read_attributes
       end
 
+      def exists?
+        File.exists?(file)
+      end
+
       def includes?(pattern)
+        return false unless exists?
+
         content.any? { |i| i.split.first == pattern }
       end
 
@@ -20,11 +26,18 @@ module GitGPG
 
       def delete(pattern)
         lines = File.read_lines(file).reject { |l| l.split.first == pattern }
-        File.write(file, lines.join("\n"))
-        @attributes = read_attributes
+
+        if lines.empty?
+          File.delete(file)
+        else
+          File.write(file, lines.join("\n"))
+          @attributes = read_attributes
+        end
       end
 
       private def read_attributes
+        return [] of String unless exists?
+
         File.read_lines(file).reject do |line|
           line.starts_with?("#") || line.blank?
         end
