@@ -23,7 +23,7 @@ module GitGPG
       def includes?(pattern)
         return false unless exists?
 
-        content.any? { |i| i.split.first == pattern }
+        attributes.any? { |i| i.split.first == pattern }
       end
 
       def add(patterns, *attributes)
