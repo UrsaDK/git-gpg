@@ -4,22 +4,20 @@ module GitGPG
       extend self
 
       class_getter recipients = [] of String
-      class_property? show_excluded_patterns : Bool = true
+      class_property? show_excluded : Bool = true
 
-      def main
-        OptionParser.parser.banner = "#{parser_banner}\n"
-        OptionParser.parser.separator("")
-        OptionParser.parser.on("-r EMAIL", "--recipients=EMAIL",
-                               "Encrypt for email") do |recipient|
-          recipients << recipient
+      def main(parser)
+        parser.banner = "#{parser_banner}\n"
+        parser.separator("")
+        parser.on("-r EMAIL", "--recipients=EMAIL", "Encrypt for email") do |r|
+          recipients << r
         end
-        OptionParser.parser.on("--no-excluded",
-                               "Do not list excluded patterns") do
-          show_excluded_patterns = false
+        parser.on("--no-excluded", "Do not list excluded patterns") do
+          show_excluded = false
         end
-        OptionParser.parser.separator("\n#{parser_footer}")
+        parser.separator("\n#{parser_footer}")
 
-        OptionParser.parser.unknown_args do |before_dash, after_dash|
+        parser.unknown_args do |before_dash, after_dash|
           if before_dash.empty? && after_dash.empty?
             list_tracked
           else
@@ -59,11 +57,9 @@ module GitGPG
         "Command::Track.list_tracked_path"
       end
 
-      private def add_tracked(pattern)
+      private def add_tracked(patterns)
         gitattributes = Git::Attributes.new(".gitattributes")
-        raise DuplicatePattern.new(pattern) if gitattributes.includes?(pattern)
-
-        gitattributes.add(pattern, "filter=gpg", "diff=gpg",
+        gitattributes.add(patterns, "filter=gpg", "diff=gpg",
                           "recipients=#{recipients.join(',')}")
       end
     end

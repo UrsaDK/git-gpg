@@ -8,20 +8,20 @@ module GitGPG
       class_getter input : String { STDIN.gets_to_end }
       class_getter output : Array(String) = [] of String
 
-      def main
-        OptionParser.parser.banner = "#{parser_banner}\n"
-        OptionParser.parser.separator("\n#{parser_footer}")
+      def main(parser)
+        parser.banner = "#{parser_banner}\n"
+        parser.separator("\n#{parser_footer}")
 
-        OptionParser.parser.unknown_args do
+        parser.unknown_args do
           if OptionParser.args.empty?
             raise Exceptions::OptionError.new(
               "Missing argument -- file",
-              OptionParser.parser.to_s
+              parser.to_s
             )
           elsif OptionParser.args.size > 1
             raise Exceptions::OptionError.new(
               "Invalid argument -- #{OptionParser.args}",
-              OptionParser.parser.to_s
+              parser.to_s
             )
           else
             file = OptionParser.args.first

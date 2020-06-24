@@ -3,9 +3,9 @@ module GitGPG
     module Textconv
       extend self
 
-      def main
-        OptionParser.parser.banner = "#{parser_banner}\n"
-        OptionParser.parser.separator("\n#{parser_footer}")
+      def main(parser)
+        parser.banner = "#{parser_banner}\n"
+        parser.separator("\n#{parser_footer}")
       end
 
       private def parser_banner

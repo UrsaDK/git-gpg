@@ -3,9 +3,8 @@ module GitGPG
     module Install
       extend self
 
-      def main(args)
+      def main(parser)
         puts "Command: #{File.basename(__FILE__, ".cr")}"
-        puts "Args: #{args}"
       end
     end
   end

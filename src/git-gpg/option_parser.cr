@@ -32,42 +32,42 @@ module GitGPG
         #   Commands::Keys.main(parser.command_args)
         # end
         parser.on("track", "Add paths to Git attributes file") do
-          Commands::Track.main
+          Commands::Track.main(parser)
         end
         parser.on("untrack", "Remove paths from Git attributes") do
-          Commands::Untrack.main
+          Commands::Untrack.main(parser)
         end
         parser.on("version", "Report the version number") do
           raise Exceptions::OptionInfo.new(Attributes.version)
         end
         parser.on("help [command]", "Lookup help for the supplied command") do
           # This code is never reached -- `help` command is handled when
-          # `args` parameter is initialised within at the top of this code.
+          # `args` class parameter is initialised within this module.
         end
 
         parser.separator("\nSupported low level filters:\n")
         parser.on("clean", "Git filter used to encrypt file content") do
-          Filters::Clean.main
+          Filters::Clean.main(parser)
         end
         parser.on("smudge", "Git filter used to decrypt file content") do
-          Filters::Smudge.main
+          Filters::Smudge.main(parser)
         end
         parser.on("textconv", "Git filter used to diff encrypted files") do
-          Filters::Textconv.main
+          Filters::Textconv.main(parser)
         end
 
         parser.separator("\n#{parser_footer}")
+
+        parser.invalid_option do |flag|
+          raise Exceptions::OptionError.new(
+            "Invalid option -- #{flag}",
+            parser.to_s
+          )
+        end
       end
     end
 
     def parse
-      parser.invalid_option do |flag|
-        raise Exceptions::OptionError.new(
-          "Invalid option -- #{flag}",
-          parser.to_s
-        )
-      end
-
       if command.nil?
         raise Exceptions::OptionError.new(
           "Missing argument -- command",
