@@ -20,6 +20,8 @@ module GitGPG
     STDERR.puts e.message
     puts "\n#{e.explanation}" unless quiet? || e.explanation.empty?
     exit(1)
+  rescue e : Exception
+    abort e.message
   end
 
   private def quiet?
