@@ -1,6 +1,13 @@
 module GitGPG
   module Git
     class Attributes
+      class DuplicateAttribute < ::Exception
+        def initialize(pattern : String = "")
+          error = %Q("#{pattern}" already supported)
+          super(error)
+        end
+      end
+
       getter file : String
       private getter attributes : Array(String)
 
@@ -19,12 +26,15 @@ module GitGPG
         content.any? { |i| i.split.first == pattern }
       end
 
-      def add(pattern, *attributes)
-        File.write(file, "#{pattern} #{attributes.join(' ')}", mode: "a")
+      def add(patterns, *attributes)
+        patterns.uniq.each do |pattern|
+          raise DuplicateAttribute.new(pattern) if includes?(pattern)
+          File.write(file, "#{pattern} #{attributes.join(' ')}\n", mode: "a")
+        end
         @attributes = read_attributes
       end
 
-      def delete(pattern)
+      def delete(patterns)
         lines = File.read_lines(file).reject { |l| l.split.first == pattern }
 
         if lines.empty?
