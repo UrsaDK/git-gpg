@@ -49,7 +49,7 @@ module GitGPG
       end
 
       private def recipients
-        Git.attribute(file, "recipients")
+        # TODO: Read recipients from .gitattributes file
       end
     end
   end
