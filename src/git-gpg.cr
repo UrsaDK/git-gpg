@@ -10,23 +10,25 @@ module GitGPG
   end
 
   class_property verbosity = Verbosity::Normal
+  class_getter execute : Proc(String) = -> { "#{Parser}" }
+  private class_setter execute
 
   def main
-    OptionParser.parse
-  rescue e : Exceptions::OptionInfo
-    puts e.message
-    exit
-  rescue e : Exceptions::OptionError
-    STDERR.puts e.message
-    puts "\n#{e.explanation}" unless quiet? || e.explanation.empty?
-    exit(1)
+    Parser.parse
+    puts execute.call
   rescue e : Exception
-    abort e.message
+    abort "ERROR: #{e.message}"
   end
 
-  private def quiet?
+  def quiet?
     verbosity == Verbosity::Quiet
   end
+
+  def execute(&block)
+    command = block
+  end
+
+  {{ run("#{__DIR__}/macros/shard_properties_to_methods") }}
 end
 
 {% unless @type.has_constant? "Spec" %}
