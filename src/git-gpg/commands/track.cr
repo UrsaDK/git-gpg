@@ -3,32 +3,20 @@ module GitGPG
     module Track
       extend self
 
-      class_getter recipients = [] of String
-      class_property? show_excluded : Bool = true
+      class_getter parser do
+        Parser.update do |parser|
+          parser.banner = "#{parser_banner}\n"
+          parser.separator("\n#{parser_footer}")
+        end
+      end
 
-      def main(parser)
-        parser.banner = "#{parser_banner}\n"
-        parser.separator("")
-        parser.on("-r EMAIL", "--recipients=EMAIL", "Encrypt for email") do |r|
-          recipients << r
-        end
-        parser.on("--no-excluded", "Do not list excluded patterns") do
-          show_excluded = false
-        end
-        parser.separator("\n#{parser_footer}")
-
-        parser.unknown_args do |before_dash, after_dash|
-          if before_dash.empty? && after_dash.empty?
-            list_tracked
-          else
-            add_tracked(before_dash + after_dash)
-          end
-        end
+      def parse
+        "--> GitGPG::Command::Track.parse"
       end
 
       private def parser_banner
         <<-END_OF_BANNER
-        Usage: #{Attributes.name} track [options] [<pattern> ...]
+        Usage: #{GitGPG.name} track [options] [<pattern> ...]
         View or add Git GPG paths to Git attributes.
         END_OF_BANNER
       end
@@ -41,9 +29,9 @@ module GitGPG
         committed. Previously committed content will not be altered.
 
         The pattern can be either a glob pattern or a file path, eg:
-          - #{Attributes.name} track
-          - #{Attributes.name} track /my/secret.txt
-          - #{Attributes.name} track "/config/*.yml"
+          - #{GitGPG.name} track
+          - #{GitGPG.name} track /my/secret.txt
+          - #{GitGPG.name} track "/config/*.yml"
 
         If no recipients are given than the recipient list will default the
         current user, as reported by: git config user.email
@@ -58,7 +46,7 @@ module GitGPG
       end
 
       private def add_tracked(patterns)
-        gitattributes = Git::Attributes.new(".gitattributes")
+        gitattributes = Git::GitGPG.new(".gitattributes")
         gitattributes.add(patterns, "filter=gpg", "diff=gpg",
                           "recipients=#{recipients.join(',')}")
       end

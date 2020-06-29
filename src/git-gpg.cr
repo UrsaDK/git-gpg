@@ -25,7 +25,7 @@ module GitGPG
   end
 
   def execute(&block)
-    command = block
+    execute = block
   end
 
   {{ run("#{__DIR__}/macros/shard_properties_to_methods") }}

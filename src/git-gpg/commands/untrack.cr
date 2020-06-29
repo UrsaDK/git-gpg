@@ -3,22 +3,15 @@ module GitGPG
     module Untrack
       extend self
 
-      def main(parser)
-        parser.banner = "#{parser_banner}\n"
-        parser.separator("\n#{parser_footer}")
-
-        parser.unknown_args do
-          if OptionParser.args.empty?
-            raise Exceptions::OptionError.new(
-              "Missing argument -- pattern",
-              parser.to_s
-            )
-          end
+      private class_getter parser do
+        Parser.update do |parser|
+          parser.banner = "#{parser_banner}\n"
+          parser.separator("\n#{parser_footer}")
         end
+      end
 
-        # TODO
-        puts "--> Command::Untrack.main"
-        puts "  ARGS: #{OptionParser.args}"
+      def parse
+        "--> GitGPG::Command::Untrack.parse"
       end
 
       private def parser_banner
