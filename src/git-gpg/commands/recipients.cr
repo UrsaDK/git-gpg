@@ -1,16 +1,16 @@
 module GitGPG
   module Commands
-    module Install
+    module Recipients
       extend self
 
       class_getter parser : OptionParser do
         Parser.update do |parser|
-          parser.banner = "TEST: command-install\n"
+          parser.banner = "TEST: command-recipients\n"
         end
       end
 
       def main
-        "==> GitGPG::Command::Install.main"
+        "==> GitGPG::Command::Recipients.main"
       end
     end
   end

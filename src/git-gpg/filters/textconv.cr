@@ -3,14 +3,19 @@ module GitGPG
     module Textconv
       extend self
 
-      def main(parser)
-        parser.banner = "#{parser_banner}\n"
-        parser.separator("\n#{parser_footer}")
+      class_getter parser : OptionParser do
+        Parser.update do |parser|
+          parser.banner = "TEST: filter-textconv\n"
+        end
+      end
+
+      def main
+        "==> GitGPG::Filters::Textconv.main"
       end
 
       private def parser_banner
         <<-END_OF_BANNER
-        Usage: #{Attributes.name} textconv [options] <file>
+        Usage: #{GitGPG.name} textconv [options] <file>
         Git textconv filter is used to produce a diff of the decrypted
         content of the encrypted file.
         END_OF_BANNER

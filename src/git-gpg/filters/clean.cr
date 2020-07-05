@@ -3,38 +3,44 @@ module GitGPG
     module Clean
       extend self
 
+      class_getter parser : OptionParser do
+        Parser.update do |parser|
+          parser.banner = "TEST: filter-clean\n"
+        end
+      end
+
       class_property file : String?
 
       class_getter input : String { STDIN.gets_to_end }
       class_getter output : Array(String) = [] of String
 
-      def main(parser)
+      def main
         parser.banner = "#{parser_banner}\n"
         parser.separator("\n#{parser_footer}")
 
         parser.unknown_args do
-          if OptionParser.args.empty?
-            raise Exceptions::OptionError.new(
-              "Missing argument -- file",
-              parser.to_s
-            )
-          elsif OptionParser.args.size > 1
-            raise Exceptions::OptionError.new(
-              "Invalid argument -- #{OptionParser.args}",
-              parser.to_s
-            )
+          if Parser.args.empty?
+            # raise Exceptions::OptionError.new(
+            #   "Missing argument -- file",
+            #   parser.to_s
+            # )
+          elsif Parser.args.size > 1
+            # raise Exceptions::OptionError.new(
+            #   "Invalid argument -- #{Parser.args}",
+            #   parser.to_s
+            # )
           else
-            file = OptionParser.args.first
+            file = Parser.args.first
           end
         end
 
         output << GPG.encrypt(file, input, recipients)
-        puts output.join("\n") unless output.empty?
+        output.join("\n")
       end
 
       private def parser_banner
         <<-END_OF_BANNER
-        Usage: #{Attributes.name} clean [options] <file>
+        Usage: #{GitGPG.name} clean [options] <file>
         Git clean filter is used to encrypt file content just before
         the file is staged for a commit.
         END_OF_BANNER

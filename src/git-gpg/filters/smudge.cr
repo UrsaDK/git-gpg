@@ -3,38 +3,44 @@ module GitGPG
     module Smudge
       extend self
 
+      class_getter parser : OptionParser do
+        Parser.update do |parser|
+          parser.banner = "TEST: filter-smudge\n"
+        end
+      end
+
       class_property file : String?
 
       class_getter input : String { STDIN.gets_to_end }
       class_getter output : Array(String) = [] of String
 
-      def main(parser)
+      def main
         parser.banner = "#{parser_banner}\n"
         parser.separator("\n#{parser_footer}")
 
         parser.unknown_args do
-          if OptionParser.args.empty?
-            raise Exceptions::OptionError.new(
-              "Missing argument -- file",
-              parser.to_s
-            )
-          elsif OptionParser.args.size > 1
-            raise Exceptions::OptionError.new(
-              "Invalid argument -- file",
-              parser.to_s
-            )
+          if Parser.args.empty?
+            # raise Exceptions::OptionError.new(
+            #   "Missing argument -- file",
+            #   parser.to_s
+            # )
+          elsif Parser.args.size > 1
+            # raise Exceptions::OptionError.new(
+            #   "Invalid argument -- file",
+            #   parser.to_s
+            # )
           else
-            file = OptionParser.args.first
+            file = Parser.args.first
           end
         end
 
         # TODO: decrypt file content
-        puts output.join("\n") unless output.empty?
+        output.join("\n")
       end
 
       private def parser_banner
         <<-END_OF_BANNER
-        Usage: #{Attributes.name} smudge [options] <file>
+        Usage: #{GitGPG.name} smudge [options] <file>
         Git smudge filter is used to decrypt file content just before
         the file is checked out from the repository.
         END_OF_BANNER
