@@ -1,18 +1,28 @@
 require "../patches/option_parser"
+require "./exception"
 
 module GitGPG
   module Parser
     extend self
 
-    class MissingCommand < ::Exception
+    class MissingCommand < Exception
       def initialize
-        super("Missing command argument")
+        super(%Q(missing command for "#{GitGPG.name}"),
+              Parser.to_s)
       end
     end
 
-    class InvalidCommand < ::Exception
+    class InvalidCommand < Exception
       def initialize(command)
-        super("Invalid option: #{command}")
+        super(%Q(unknown command "#{command}" for "#{GitGPG.name}"),
+              Parser.to_s)
+      end
+    end
+
+    class InvalidOption < Exception
+      def initialize(option)
+        super(%Q(unknown option "#{option}" for "#{GitGPG.name}" command),
+              Parser.to_s)
       end
     end
 
@@ -22,45 +32,83 @@ module GitGPG
       (ARGV - ["help"]).push("--help")
     end
 
-    private class_property option_parser do
+    private class_getter option_parser do
       ::OptionParser.new do |parser|
         parser.banner = "#{parser_banner}\n"
 
+        parser.on("-q", "--quiet", "Only show warnings & errors") do
+          GitGPG.verbosity = Verbosity::Quiet
+        end
+        parser.on("-v", "--version", "Reports the version number") do
+          GitGPG.defer { GitGPG.version }
+        end
         parser.on("-?", "--help", "Shows this help message") do
-          GitGPG.execute { "#{option_parser}" }
+          help_text = parser.to_s
+          GitGPG.defer { "#{help_text}" }
         end
 
         parser.separator("\nAvailable high level commands:\n")
+        parser.on("install", "Install Git GPG configuration") do
+          parser = Commands::Install.parser
+          GitGPG.defer { Commands::Install.main }
+        end
+        parser.on("recipients",
+                  "List all GPG recipients that can decode a file") do
+          parser = Commands::Recipients.parser
+          GitGPG.defer { Commands::Recipients.main }
+        end
         parser.on("track", "Add paths to Git attributes file") do
-          GitGPG.execute do
-            puts "MONKEY"
-            option_parser = Commands::Track.parser
-            Commands::Track.parse
-          end
+          parser = Commands::Track.parser
+          GitGPG.defer { Commands::Track.main }
         end
         parser.on("untrack", "Remove paths from Git attributes") do
-          Commands::Untrack.parse
+          parser = Commands::Untrack.parser
+          GitGPG.defer { Commands::Untrack.main }
         end
+        parser.on("version", "Report the version number") do
+          GitGPG.defer { GitGPG.version }
+        end
+        parser.on("help [command]", "Lookup help for the supplied command") do
+          # `help` is handled when `args` parameter is initialised (see above),
+          # but we do want to include this command as part of user help message
+        end
+
+        parser.separator("\nSupported low level filters:\n")
+        parser.on("clean", "Git filter used to encrypt file content") do
+          parser = Filters::Clean.parser
+          GitGPG.defer { Filters::Clean.main }
+        end
+        parser.on("smudge", "Git filter used to decrypt file content") do
+          parser = Filters::Smudge.parser
+          GitGPG.defer { Filters::Smudge.main }
+        end
+        parser.on("textconv", "Git filter used to diff encrypted files") do
+          parser = Filters::Textconv.parser
+          GitGPG.defer { Filters::Textconv.main }
+        end
+
+        parser.separator("\n#{parser_footer}")
+        parser.invalid_option { |o| raise InvalidOption.new(o) }
       end
     end
 
     def update(&block) : OptionParser
-      option_parser.tap { with self yield option_parser }
+      option_parser.tap { yield option_parser }
     end
 
     def parse
+      raise MissingCommand.new if command.nil?
+      raise InvalidCommand.new(command) unless commands.includes?(command)
+    ensure
       option_parser.parse(args)
-
-      # raise MissingCommand.new if command.nil?
-      # raise InvalidCommand.new(command) unless commands.includes?(command)
-    end
-
-    def command
-      args.find { |arg| arg.starts_with?(/[a-z]/) }
     end
 
     def to_s
       option_parser.to_s
+    end
+
+    private def command
+      args.find { |arg| arg.starts_with?(/[a-z]/) }
     end
 
     private def commands

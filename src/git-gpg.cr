@@ -10,22 +10,21 @@ module GitGPG
   end
 
   class_property verbosity = Verbosity::Normal
-  class_getter execute : Proc(String) = -> { "#{Parser}" }
-  private class_setter execute
+  class_property command : Proc(String) = -> { "#{GitGPG::Parser}" }
 
   def main
     Parser.parse
-    puts execute.call
+    puts command.call
   rescue e : Exception
-    abort "ERROR: #{e.message}"
+    abort e.message
   end
 
   def quiet?
     verbosity == Verbosity::Quiet
   end
 
-  def execute(&block)
-    execute = block
+  def defer(&block : Proc(String))
+    self.command = block
   end
 
   {{ run("#{__DIR__}/macros/shard_properties_to_methods") }}
