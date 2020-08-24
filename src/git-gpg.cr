@@ -27,7 +27,7 @@ module GitGPG
     self.command = block
   end
 
-  {{ run("#{__DIR__}/macros/shard_properties_to_methods") }}
+  {{ run("#{__DIR__}/macros/shard_properties") }}
 end
 
 {% unless @type.has_constant? "Spec" %}
