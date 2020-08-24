@@ -6,8 +6,11 @@ module GitGPG
     def initialize(@error = "", @description = ""); end
 
     def message
-      text = GitGPG.quiet? ? error : "#{error}\n\n#{description}"
-      "Error: #{text}"
+      if GitGPG.quiet? || description.empty?
+        "Error: #{error}"
+      else
+        "Error: #{error}\n\n#{description}"
+      end
     end
   end
 end
