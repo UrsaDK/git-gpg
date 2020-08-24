@@ -5,23 +5,28 @@ module GitGPG
   module Parser
     extend self
 
-    class MissingCommand < Exception
-      def initialize
-        super(%Q(missing command for "#{GitGPG.name}"),
-              Parser.to_s)
-      end
-    end
-
-    class InvalidCommand < Exception
-      def initialize(command)
-        super(%Q(unknown command "#{command}" for "#{GitGPG.name}"),
-              Parser.to_s)
-      end
+    macro execute(command)
+      {{command}}.parse(parser)
+      GitGPG.command { {{command}}.execute }
     end
 
     class InvalidOption < Exception
       def initialize(option)
         super(%Q(unknown option "#{option}" for "#{GitGPG.name}" command),
+              Parser.to_s)
+      end
+    end
+
+    class InvalidArgs < Exception
+      def initialize(argument)
+        super(%Q(unknown argument "#{argument}" for "#{GitGPG.name}"),
+              Parser.to_s)
+      end
+    end
+
+    class MissingArgs < Exception
+      def initialize(argument)
+        super(%Q(missing argument "#{argument}" for "#{GitGPG.name}" command),
               Parser.to_s)
       end
     end
@@ -40,66 +45,56 @@ module GitGPG
           GitGPG.verbosity = Verbosity::Quiet
         end
         parser.on("-v", "--version", "Reports the version number") do
-          GitGPG.defer { GitGPG.version }
+          GitGPG.command { Commands::Version.execute }
         end
         parser.on("-?", "--help", "Shows this help message") do
           help_text = parser.to_s
-          GitGPG.defer { "#{help_text}" }
+          GitGPG.command { "#{help_text}" }
         end
 
-        parser.separator("\nAvailable high level commands:\n")
-        parser.on("install", "Install Git GPG configuration") do
-          parser = Commands::Install.parser
-          GitGPG.defer { Commands::Install.main }
+        parser.separator("\nAvailable commands:\n")
+        parser.on("install", "Install #{GitGPG.name} integration") do
+          execute(Commands::Install)
         end
-        parser.on("recipients",
-                  "List all GPG recipients that can decode a file") do
-          parser = Commands::Recipients.parser
-          GitGPG.defer { Commands::Recipients.main }
+        parser.on("recipients", "Manage a list recipients for a given file") do
+          execute(Commands::Recipients)
         end
         parser.on("track", "Add paths to Git attributes file") do
-          parser = Commands::Track.parser
-          GitGPG.defer { Commands::Track.main }
+          execute(Commands::Track)
+        end
+        parser.on("uninstall", "Remove #{GitGPG.name} integration") do
+          execute(Commands::Uninstall)
         end
         parser.on("untrack", "Remove paths from Git attributes") do
-          parser = Commands::Untrack.parser
-          GitGPG.defer { Commands::Untrack.main }
+          execute(Commands::Untrack)
         end
-        parser.on("version", "Report the version number") do
-          GitGPG.defer { GitGPG.version }
+        parser.separator()
+        parser.on("version", "Report #{GitGPG.name} version number") do
+          execute(Commands::Version)
         end
         parser.on("help [command]", "Lookup help for the supplied command") do
-          # `help` is handled when `args` parameter is initialised (see above),
-          # but we do want to include this command as part of user help message
+          # this block allows us to include this command in user help message,
+          # `help` is handled when `args` parameter is initialised (see above)
         end
 
-        parser.separator("\nSupported low level filters:\n")
+        parser.separator("\nSupported filters:\n")
         parser.on("clean", "Git filter used to encrypt file content") do
-          parser = Filters::Clean.parser
-          GitGPG.defer { Filters::Clean.main }
+          execute(Filters::Clean)
         end
         parser.on("smudge", "Git filter used to decrypt file content") do
-          parser = Filters::Smudge.parser
-          GitGPG.defer { Filters::Smudge.main }
+          execute(Filters::Smudge)
         end
         parser.on("textconv", "Git filter used to diff encrypted files") do
-          parser = Filters::Textconv.parser
-          GitGPG.defer { Filters::Textconv.main }
+          execute(Filters::Textconv)
         end
 
         parser.separator("\n#{parser_footer}")
         parser.invalid_option { |o| raise InvalidOption.new(o) }
+        parser.unknown_args { parse_unknown_args }
       end
     end
 
-    def update(&block) : OptionParser
-      option_parser.tap { yield option_parser }
-    end
-
     def parse
-      raise MissingCommand.new if command.nil?
-      raise InvalidCommand.new(command) unless commands.includes?(command)
-    ensure
       option_parser.parse(args)
     end
 
@@ -115,6 +110,11 @@ module GitGPG
       option_parser.flags.select(&.starts_with?(/\s*[a-z]/)).map do |command|
         command.chomp.split.first
       end
+    end
+
+    private def parse_unknown_args
+      unknown_args = args.reject(&.starts_with?('-'))
+      raise InvalidArgs.new(unknown_args.first) unless unknown_args.empty?
     end
 
     private def parser_banner
