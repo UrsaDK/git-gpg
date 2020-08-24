@@ -10,7 +10,7 @@ module GitGPG
   end
 
   class_property verbosity = Verbosity::Normal
-  class_property command : Proc(String) = -> { "#{GitGPG::Parser}" }
+  class_getter command : Proc(String) = -> { "#{GitGPG::Parser}" }
 
   def main
     Parser.parse
@@ -23,8 +23,8 @@ module GitGPG
     verbosity == Verbosity::Quiet
   end
 
-  def defer(&block : Proc(String))
-    self.command = block
+  def command(&command : Proc(String))
+    @@command = command
   end
 
   {{ run("#{__DIR__}/macros/shard_properties") }}
