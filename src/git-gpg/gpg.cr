@@ -16,7 +16,5 @@ module GitGPG
       puts "  CONTENT --> #{content}"
       "GPG.decrypt(#{file}, ...)"
     end
-
-
   end
 end
