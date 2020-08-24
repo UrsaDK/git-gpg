@@ -1,5 +1,4 @@
-.PHONY: test fixtures clean distclean
-
+.PHONY: test fixtures clean distclean src/git-gpg
 ARCH := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m)
 
 # Build the release
@@ -31,7 +30,7 @@ test: shard.lock bin/git-gpg
 	crystal spec --progress --order random
 
 bin/%: src/%.cr src/%
-	@shards build $(@F) --progress
+	@shards build $(@F) --progress --debug
 	@rm -f bin/*.dwarf
 
 fixtures:
