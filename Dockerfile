@@ -20,7 +20,8 @@ RUN cp -Rd /etc/skel/.??* /root \
     && ln -sf /home/bin /root/bin \
     && addgroup -g 1000 guest \
     && adduser -h /home -s /bin/bash -G guest -D -u 1000 guest \
-    && chown -R guest:guest /mnt
+    && ln -sf /mnt/bin /home/bin \
+    && chown -R guest:guest /mnt /home
 ENV ENV="/etc/init.d/login_shell"
 ENTRYPOINT ["/etc/init.d/login_shell"]
 
