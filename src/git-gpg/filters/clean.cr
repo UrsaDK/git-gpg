@@ -3,39 +3,21 @@ module GitGPG
     module Clean
       extend self
 
-      class_getter parser : OptionParser do
-        Parser.update do |parser|
-          parser.banner = "TEST: filter-clean\n"
+      class_getter file : String?
+
+      def parse(parser)
+        parser.banner = "#{parser_banner}\n"
+        parser.separator("\n#{parser_footer}")
+        parser.unknown_args do
+          raise Parser::MissingArgs.new("file") if Parser.args.empty?
+
+          @file = Parser.args.join(' ')
+          raise Parser::InvalidArgs.new(file) if Parser.args.size > 1
         end
       end
 
-      class_property file : String?
-
-      class_getter input : String { STDIN.gets_to_end }
-      class_getter output : Array(String) = [] of String
-
-      def main
-        parser.banner = "#{parser_banner}\n"
-        parser.separator("\n#{parser_footer}")
-
-        parser.unknown_args do
-          if Parser.args.empty?
-            # raise Exceptions::OptionError.new(
-            #   "Missing argument -- file",
-            #   parser.to_s
-            # )
-          elsif Parser.args.size > 1
-            # raise Exceptions::OptionError.new(
-            #   "Invalid argument -- #{Parser.args}",
-            #   parser.to_s
-            # )
-          else
-            file = Parser.args.first
-          end
-        end
-
-        output << GPG.encrypt(file, input, recipients)
-        output.join("\n")
+      def execute
+        "==> GitGPG::Filters::Clean.execute with #{file}"
       end
 
       private def parser_banner
@@ -52,10 +34,6 @@ module GitGPG
         to the file the filter is working on. The content of the file
         should be provided to the filter on standard input.
         END_OF_FOOTER
-      end
-
-      private def recipients
-        # TODO: Read recipients from .gitattributes file
       end
     end
   end
