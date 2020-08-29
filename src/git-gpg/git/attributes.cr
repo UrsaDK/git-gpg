@@ -1,7 +1,7 @@
 module GitGPG
   module Git
     class Attributes
-      class DuplicateAttribute < ::Exception
+      class DuplicateAttribute < Exception
         def initialize(pattern : String = "")
           error = %Q("#{pattern}" already supported)
           super(error)
