@@ -9,8 +9,9 @@ all: tests targets
 # --------------------------
 
 tests: shard.lock
-	@./bin/ameba --all
-	@crystal spec --progress --order random
+	./bin/ameba --all
+	@echo
+	crystal spec --progress --order random
 
 shard.lock: shard.yml
 	@shards install
