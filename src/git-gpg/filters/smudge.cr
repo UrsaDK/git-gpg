@@ -11,7 +11,7 @@ module GitGPG
         parser.unknown_args do
           raise Parser::MissingArgs.new("file") if Parser.args.empty?
 
-          @file = Parser.args.join(' ')
+          @@file = Parser.args.join(' ')
           raise Parser::InvalidArgs.new(file) if Parser.args.size > 1
         end
       end
