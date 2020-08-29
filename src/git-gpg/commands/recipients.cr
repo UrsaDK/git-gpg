@@ -15,10 +15,10 @@ module GitGPG
       def parse(parser)
         parser.banner = "#{parser_banner}\n"
         parser.separator()
-        parser.on("-a EMAIL", "--add=EMAIL", "Add a new recipient") do |r|
+        parser.on("-a EMAIL", "--add=EMAIL", "Add a new recipient") do |_|
           # TODO
         end
-        parser.on("-d EMAIL", "--del=EMAIL", "Delete a recipient") do |r|
+        parser.on("-d EMAIL", "--del=EMAIL", "Delete a recipient") do |_|
           # TODO
         end
         parser.on("--no-files", "Do not show a list of accessible files") do
