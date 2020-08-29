@@ -1,50 +1,47 @@
-.PHONY: test fixtures clean distclean src/git-gpg
+.PHONY: init tests targets fixtures release clean distclean \
+				linux-x86_64 darwin-x86_64
 ARCH := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m)
+RECIPIENT := git-gpg-dev@ursa.dk
 
-# Build the release
-# -----------------
+all: tests targets
 
-all: shard.lock build/git-gpg-$(ARCH)
-	@rm -f build/*.dwarf
+# Test and development tools
+# --------------------------
 
-build/%-linux-x86_64: src/%.cr src/% | build
-	crystal build $< -o $@ --release --static --progress
-
-build/%-darwin-x86_64: src/%.cr src/% | build
-	crystal build $< -o $@ --release --progress
+tests: shard.lock
+	@./bin/ameba --all
+	@crystal spec --progress --order random
 
 shard.lock: shard.yml
 	@shards install
 	@shards prune
 
-build:
-	mkdir -p build
-
-src/git-gpg: $(shell find src/git-gpg -type f -name *.cr)
-
-# Test and development tools
-# --------------------------
-
-test: shard.lock bin/git-gpg
-	./bin/ameba --all
-	crystal spec --progress --order random
-
-bin/%: src/%.cr src/%
-	@shards build $(@F) --progress --debug
+targets: shard.lock
+	@shards build --progress --debug
 	@rm -f bin/*.dwarf
 
 fixtures:
 	gpg --encrypt --quiet --batch --no-tty \
-		--recipient git-gpg-dev@ursa.dk \
+		--recipient $(RECIPIENT) \
 		--output ./spec/fixtures/encrypted.bin ./spec/fixtures/decrypted.txt
 
-# Clean up jobs
-# -------------
+# Build the release
+# -----------------
+
+release: shard.lock $(ARCH)
+	@rm -f build/*.dwarf
+
+linux-x86_64:
+	@shards --production build --release --static --progress
+
+darwin-x86_64:
+	@shards --production build --release --progress
+
+# Remove development artefacts
+# ----------------------------
 
 clean:
-	rm -Rf bin/{git-gpg,amber} lib/*
-	find . -name *.dwarf -exec rm -f {} \;
-
-distclean: clean
-	rm -Rf build/*
-	rm -f shard.lock
+	@find . -type f \( -name .DS_Store -o -name "*.dwarf" \) -exec rm -f {} \;
+	@rm -R -fv lib/* | grep -E "^removed directory: 'lib/[^/]+'" || :
+	@find ./bin -type f -not -name docker -exec rm -fv {} \;
+	@rm -fv shard.lock build/*
