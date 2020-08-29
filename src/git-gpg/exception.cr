@@ -1,7 +1,7 @@
 module GitGPG
   class Exception < ::Exception
-    getter error : String?
-    getter description : String?
+    getter error = ""
+    getter description = ""
 
     def initialize(@error = "", @description = ""); end
 
