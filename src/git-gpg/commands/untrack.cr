@@ -3,24 +3,16 @@ module GitGPG
     module Untrack
       extend self
 
-      class MissingArgument < Exception
-        def initialize(argument)
-          super(%Q(missing argument "#{argument}" for "#{GitGPG.name}" command),
-                Untrack.parser.to_s)
+      def parse(parser)
+        parser.banner = "#{parser_banner}\n"
+        parser.separator("\n#{parser_footer}")
+        parser.unknown_args do
+          raise Parser::MissingArgs.new("pattern") if Parser.args.empty?
         end
       end
 
-      class_getter parser do
-        Parser.update do |parser|
-          parser.banner = "#{parser_banner}\n"
-          parser.separator("\n#{parser_footer}")
-        end
-      end
-
-      def main
-        raise MissingArgument.new("pattern") if Parser.args.empty?
-
-        "==> GitGPG::Command::Untrack.main"
+      def execute
+        "==> GitGPG::Command::Untrack.execute with #{Parser.args}"
       end
 
       private def parser_banner

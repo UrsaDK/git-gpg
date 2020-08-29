@@ -3,32 +3,34 @@ module GitGPG
     module Track
       extend self
 
-      class_getter recipients = [] of String
-      class_property? show_excluded : Bool = true
-
-      class_getter parser do
-        Parser.update do |parser|
-          parser.banner = "#{parser_banner}\n"
-          parser.separator("")
-          parser.on("-r EMAIL",
-                    "--recipients=EMAIL",
-                    "Encrypt for email") do |r|
-            recipients << r
-          end
-          parser.on("--no-excluded", "Do not list excluded patterns") do
-            show_excluded = false
-          end
-          parser.separator("\n#{parser_footer}")
-        end
+      @[Flags]
+      enum List
+        Tracked
+        Excluded
       end
 
-      def main
-        # if Parser.args.empty?
-        #   list_tracked
-        # else
-        #   add_tracked(Parser.args)
-        # end
-        "==> Command::Track.main"
+      class_getter recipients = [] of String
+      class_property list_patterns = List::All
+
+      def parse(parser)
+        parser.banner = "#{parser_banner}\n"
+        parser.separator()
+        parser.on("-r EMAIL", "--recipients=EMAIL", "Encrypt for email") do |r|
+          recipients << r
+        end
+        parser.on("--no-excluded", "Do not list excluded patterns") do
+          list_patterns = List::Tracked
+        end
+        parser.separator("\n#{parser_footer}")
+        parser.unknown_args { }
+      end
+
+      def execute
+        if Parser.args.empty?
+          list_tracked
+        else
+          add_tracked(Parser.args)
+        end
       end
 
       private def parser_banner
@@ -50,21 +52,24 @@ module GitGPG
           - #{GitGPG.name} track /my/secret.txt
           - #{GitGPG.name} track "/config/*.yml"
 
-        If no recipients are given than the recipient list will default the
-        current user, as reported by: git config user.email
+        If no recipients are given than the recipient list will default to
+        the current user, as reported by: git config user.email
 
         If no pattern is provided, then list all currently-tracked paths.
         END_OF_FOOTER
       end
 
       private def list_tracked
-        "==> Command::Track.list_tracked_path"
+        "==> GitGPG::Command::Track.list_tracked"
       end
 
       private def add_tracked(patterns)
-        gitattributes = Git::Attributes.new(".gitattributes")
-        gitattributes.add(patterns, "filter=gpg", "diff=gpg",
-                          "recipients=#{recipients.join(',')}")
+        # TODO
+        # gitattributes = Git::Attributes.new(".gitattributes")
+        # gitattributes.add(patterns, "filter=gpg", "diff=gpg",
+        #                   "recipients=#{recipients.join(',')}")
+
+        "==> GitGPG::Command::Track.add_tracked with #{patterns}"
       end
     end
   end

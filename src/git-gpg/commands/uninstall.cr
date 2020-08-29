@@ -1,6 +1,6 @@
 module GitGPG
   module Commands
-    module Install
+    module Uninstall
       extend self
 
       enum Target
@@ -20,30 +20,25 @@ module GitGPG
       end
 
       def execute
-        "==> GitGPG::Command::Install.execute"
+        "==> GitGPG::Command::Uninstall.execute"
       end
 
       private def parser_banner
         <<-END_OF_BANNER
-        Usage: #{GitGPG.name} install [options]
-        Install #{GitGPG.name} integration
+        Usage: #{GitGPG.name} uninstall [options]
+        Remove #{GitGPG.name} integration
         END_OF_BANNER
       end
 
       private def parser_footer
         <<-END_OF_FOOTER
-        This command adds the following configuration settings:
+        This command removes the following configuration sections:
 
           [filter "gpg"]
-            required = true
-            clean = #{GitGPG.name} clean -- %f
-            smudge = #{GitGPG.name} smudge -- %f
-
           [diff "gpg"]
-            textconv = #{GitGPG.name} textconv
 
         As an alternative to running this command, and assuming that you know
-        what you're doing, you can add the above changes manually.
+        what you're doing, you can remove the above sections manually.
         END_OF_FOOTER
       end
     end
