@@ -1,25 +1,27 @@
-.PHONY: init tests targets fixtures release clean distclean \
+.PHONY: lib targets tests fixtures release clean \
 				linux-x86_64 darwin-x86_64
 ARCH := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m)
 RECIPIENT := git-gpg-dev@ursa.dk
 
 all: tests targets
+lib: shard.lock
 
 # Test and development tools
 # --------------------------
 
+targets: shard.lock
+	@shards build --progress --debug
+	@rm -f bin/*.dwarf
+
 tests: shard.lock
 	./bin/ameba --all
 	@echo
-	crystal spec --progress --order random
+	crystal spec --progress --order rand
 
 shard.lock: shard.yml
 	@shards install
 	@shards prune
-
-targets: shard.lock
-	@shards build --progress --debug
-	@rm -f bin/*.dwarf
+	@touch shard.lock
 
 fixtures:
 	gpg --encrypt --quiet --batch --no-tty \
@@ -45,4 +47,4 @@ clean:
 	@find . -type f \( -name .DS_Store -o -name "*.dwarf" \) -exec rm -f {} \;
 	@rm -R -fv lib/* | grep -E "^removed directory: 'lib/[^/]+'" || :
 	@find ./bin -type f -not -name docker -exec rm -fv {} \;
-	@rm -fv shard.lock build/*
+	@touch shard.yml
