@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 __help() {
 cat <<END_OF_HELP
@@ -29,29 +29,32 @@ END_OF_HELP
 }
 
 COMMAND="${1:-help}"
-if [[ -z "${2}" || "${2}" == '-'* ]]; then
-  IMAGE="$(echo "${PWD##*/}" | tr '[:upper:] ' '[:lower:]-')"
-  TAG="latest"
-  shift 1
-elif [[ "${2}" == *':'* ]]; then
-  IMAGE="${2}"
-  TAG="${2##*:}"
-  shift 2
-elif [[ "${2}" == *'/'* ]]; then
-  IMAGE="${2}"
-  TAG="latest"
-  shift 2
-elif [[ -n "${2}" ]]; then
-  IMAGE="$(echo "${PWD##*/}" | tr '[:upper:] ' '[:lower:]-'):${2}"
-  TAG="${2}"
-  shift 2
-else
-  echo "Invalid argument -- ${2}" >&2
-  echo "  - IMAGE: ${IMAGE}" >&2
-  echo "  - TAG:   ${TAG}" >&2
-  exit 1
-fi
 
+# Parse "[image:]<tag>" cli argument into an image and tag names
+case "${2}" in
+  ''|-*)
+    IMAGE="$(echo "${PWD##*/}" | tr '[:upper:] ' '[:lower:]-')"
+    TAG="latest"
+    shift 1
+    ;;
+  *:*)
+    IMAGE="${2}"
+    TAG="${2##*:}"
+    shift 2
+    ;;
+  */*)
+    IMAGE="${2}"
+    TAG="latest"
+    shift 2
+    ;;
+  *)
+    IMAGE="$(echo "${PWD##*/}" | tr '[:upper:] ' '[:lower:]-'):${2}"
+    TAG="${2}"
+    shift 2
+    ;;
+esac
+
+# execute requested subcommand
 case "${COMMAND}" in
   'b'|'build')
     DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} \
@@ -61,7 +64,7 @@ case "${COMMAND}" in
       "${@}" "${PWD}";
     ;;
   'r'|'run')
-    [[ -t 1 ]] && IT='-it' # Check if output is attached to a TTY
+    [ -t 1 ] && IT='-it' # Check if output is attached to a TTY
     docker container run ${GITHUB_ACTIONS:+-u root} \
       --rm --init ${IT} -p 8080:8080 -v "${PWD}:/mnt" "${IMAGE}" "${@}"
     ;;
@@ -70,13 +73,13 @@ case "${COMMAND}" in
     docker container attach "${@}" "${CONTAINER_ID}"
     ;;
   'e'|'exec')
-    [[ -t 1 ]] && IT='-it' # Check if output is attached to a TTY
+    [ -t 1 ] && IT='-it' # Check if output is attached to a TTY
     CONTAINER_ID="$(docker container ls -qlf "ancestor=${IMAGE}")"
     docker container exec ${IT} "${CONTAINER_ID}" "${@}"
     ;;
   's'|'stop')
     CONTAINER_IDS="$(docker container ls -qf "ancestor=${IMAGE}")"
-    [[ -n "${CONTAINER_IDS}" ]] && docker container stop "${@}" "${CONTAINER_IDS}"
+    [ -n "${CONTAINER_IDS}" ] && docker container stop "${@}" "${CONTAINER_IDS}"
     ;;
   '-?'|'--help'|'help')
     __help
