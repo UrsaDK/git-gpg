@@ -3,9 +3,10 @@
 ARCH := $(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m)
 RECIPIENT := git-gpg-dev@ursa.dk
 
-all: tests targets
+all: tests debug
 lib: shard.lock
-release: shard.lock $(ARCH) garbage-collection
+debug: targets garbage-collect
+release: shard.lock $(ARCH) garbage-collect
 test: tests
 
 # Test and development tools
@@ -13,7 +14,6 @@ test: tests
 
 targets: shard.lock
 	@shards build --progress --debug
-	@rm -f bin/*.dwarf
 
 tests: shard.lock
 	./bin/ameba --all
@@ -42,10 +42,10 @@ darwin-x86_64:
 # Remove development artefacts
 # ----------------------------
 
-garbage-collection:
+garbage-collect:
 	@find . -type f \( -name .DS_Store -o -name "*.dwarf" \) -delete
 
-clean: garbage-collection
+clean: garbage-collect
 	@find ./lib -depth 1 -print -delete
 	@find ./bin -type f -not -name docker -print -delete
 	@touch shard.yml
