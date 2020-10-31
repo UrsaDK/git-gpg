@@ -5,6 +5,7 @@ RECIPIENT := git-gpg-dev@ursa.dk
 
 all: tests targets
 lib: shard.lock
+release: shard.lock $(ARCH) garbage-collection
 test: tests
 
 # Test and development tools
@@ -31,9 +32,6 @@ fixtures:
 
 # Build the release
 # -----------------
-
-release: shard.lock $(ARCH)
-	@rm -f build/*.dwarf
 
 linux-x86_64:
 	@shards --production build --release --no-debug --static --progress
