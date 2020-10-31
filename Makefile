@@ -5,6 +5,7 @@ RECIPIENT := git-gpg-dev@ursa.dk
 
 all: tests targets
 lib: shard.lock
+test: tests
 
 # Test and development tools
 # --------------------------
@@ -35,16 +36,16 @@ release: shard.lock $(ARCH)
 	@rm -f build/*.dwarf
 
 linux-x86_64:
-	@shards --production build --release --static --progress
+	@shards --production build --release --no-debug --static --progress
 
 darwin-x86_64:
-	@shards --production build --release --progress
+	@shards --production build --release --no-debug --progress
 
 # Remove development artefacts
 # ----------------------------
 
 clean:
-	@find . -type f \( -name .DS_Store -o -name "*.dwarf" \) -exec rm -f {} \;
-	@rm -R -fv lib/* | grep -E "^removed directory: 'lib/[^/]+'" || :
-	@find ./bin -type f -not -name docker -exec rm -fv {} \;
+	@find . -type f \( -name .DS_Store -o -name "*.dwarf" \) -delete
+	@find ./lib -depth 1 -print -delete
+	@find ./bin -type f -not -name docker -print -delete
 	@touch shard.yml
