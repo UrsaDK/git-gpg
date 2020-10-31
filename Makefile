@@ -44,8 +44,10 @@ darwin-x86_64:
 # Remove development artefacts
 # ----------------------------
 
-clean:
+garbage-collection:
 	@find . -type f \( -name .DS_Store -o -name "*.dwarf" \) -delete
+
+clean: garbage-collection
 	@find ./lib -depth 1 -print -delete
 	@find ./bin -type f -not -name docker -print -delete
 	@touch shard.yml
