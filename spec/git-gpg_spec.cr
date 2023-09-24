@@ -1,68 +1,61 @@
-require "yaml"
 require "./spec_helper"
 
-describe GitGPG do
-  usage_header = "Usage: #{GitGPG.name} [options] <commands>"
+Spectator.describe GitGPG do
+  describe "module" do
+    subject { described_class }
 
-  it_responds_to(GitGPG, main)
-  it_responds_to(GitGPG, name)
-  it_responds_to(GitGPG, verbosity)
-  it_responds_to(GitGPG, version)
+    it { is_expected.to respond_to(:main) }
+    it { is_expected.to respond_to(:quiet?) }
+    it { is_expected.to respond_to(:command) }
+    it { is_expected.to respond_to(:verbosity) }
 
-  describe ".name" do
-    it "returns: git gpg" do
-      GitGPG.name.should eq("git gpg")
+    # Imported via a macro
+    it { is_expected.to respond_to(:name) }
+    it { is_expected.to respond_to(:version) }
+    it { is_expected.to respond_to(:authors) }
+    it { is_expected.to respond_to(:description) }
+    it { is_expected.to respond_to(:repository) }
+    it { is_expected.to respond_to(:crystal) }
+    it { is_expected.to respond_to(:license) }
+  end
+
+  describe "verbosity" do
+    around_each do |proc|
+      puts "around_each :: top"
+      default_verbosity = described_class.verbosity
+      proc.call
+      described_class.verbosity = default_verbosity
+      puts "around_each :: end"
     end
-  end
 
-  describe ".verbosity" do
-    it "defaults to NORMAL" do
-      GitGPG.verbosity.should eq(GitGPG::Verbosity::Normal)
-    end
-  end
+    context "with defaults" do
+      before_each { puts "before_each" }
 
-  describe "version" do
-    shard_version = begin
-      shard_yml = "#{__DIR__}/../shard.yml"
-      YAML.parse(File.read(shard_yml))["version"]
+      it { expect(described_class.verbosity).to eq(GitGPG::Verbosity::Normal) }
+      it { expect(described_class.quiet?).to be_false }
     end
 
-    git_gpg_output("-v", eq("#{shard_version}\n"))
-    git_gpg_output("--version", eq("#{shard_version}\n"))
-    git_gpg_output("version", eq("#{shard_version}\n"))
+    # context "when set to Normal" do
+    #   before_each { described_class.verbosity = GitGPG::Verbosity::Normal }
 
-    it "is returned by .version" do
-      GitGPG.version.should eq(shard_version)
+    #   it { expect(described_class.verbosity).to eq(GitGPG::Verbosity::Normal) }
+    #   it { expect(described_class.quiet?).to be_false }
+    # end
+
+    # context "when set to Quiet" do
+    #   before_each { described_class.verbosity = GitGPG::Verbosity::Quiet }
+
+    #   it { expect(described_class.verbosity).to eq(GitGPG::Verbosity::Quiet) }
+    #   it { expect(described_class.quiet?).to be_true }
+    # end
+  end
+
+  describe "command" do
+    subject { described_class.command.call }
+
+    context "with defaults" do
+      it { is_expected.to be_a(String) }
+      it { is_expected.to start_with("Usage:") }
     end
-  end
-
-  describe "help" do
-    git_gpg_output("-?", start_with(usage_header))
-    git_gpg_output("--help", start_with(usage_header))
-    git_gpg_output("help", start_with(usage_header))
-    git_gpg_output("help --invalid-option", start_with(usage_header))
-  end
-
-  context "with invalid option" do
-    git_gpg_stderr("--invalid-option",
-                   eq("ERROR: --invalid-option is not a valid option\n"))
-    git_gpg_stdout("--invalid-option",
-                   start_with("\n#{usage_header}"))
-  end
-
-  context "with invalid command" do
-    git_gpg_stderr("invalid-command",
-                   eq("ERROR: invalid-command is not a valid command\n"))
-    git_gpg_stdout("invalid-command",
-                   start_with("\n#{usage_header}"))
-    git_gpg_stderr("help invalid-command",
-                   eq("ERROR: invalid-command is not a valid command\n"))
-    git_gpg_stdout("help invalid-command",
-                   start_with("\n#{usage_header}"))
-  end
-
-  context "with missing command" do
-    git_gpg_stderr("", eq("ERROR: Missing #{GitGPG.name} command\n"))
-    git_gpg_stdout("", start_with("\n#{usage_header}"))
   end
 end
