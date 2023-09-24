@@ -7,7 +7,7 @@ module GitGPG
 
     macro execute(command)
       {{command}}.parse(parser)
-      GitGPG.command { {{command}}.execute }
+      GitGPG.command = -> { {{command}}.execute }
     end
 
     class InvalidOption < Exception
@@ -45,11 +45,11 @@ module GitGPG
           GitGPG.verbosity = Verbosity::Quiet
         end
         parser.on("-v", "--version", "Reports the version number") do
-          GitGPG.command { Commands::Version.execute }
+          GitGPG.command = -> { Commands::Version.execute }
         end
         parser.on("-?", "--help", "Shows this help message") do
           help_text = parser.to_s
-          GitGPG.command { "#{help_text}" }
+          GitGPG.command = -> { "#{help_text}" }
         end
 
         parser.separator("\nAvailable commands:\n")

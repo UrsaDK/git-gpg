@@ -10,7 +10,7 @@ module GitGPG
   end
 
   class_property verbosity = Verbosity::Normal
-  class_getter command : Proc(String) = -> { "#{GitGPG::Parser}" }
+  class_property command : Proc(String) = -> { "#{GitGPG::Parser}" }
 
   def main
     Parser.parse
@@ -23,13 +23,9 @@ module GitGPG
     verbosity == Verbosity::Quiet
   end
 
-  def command(&command : Proc(String))
-    @@command = command
-  end
-
   {{ run("#{__DIR__}/macros/shard_properties") }}
 end
 
-{% unless @type.has_constant? "Spec" %}
+{% unless @type.has_constant? "Spectator" %}
   GitGPG.main
 {% end %}
